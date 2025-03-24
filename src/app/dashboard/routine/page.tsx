@@ -14,6 +14,8 @@ interface Exercise {
   rest: string;
   notes?: string;
   day: string;
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video';
 }
 
 const RoutinePage = () => {
@@ -51,39 +53,39 @@ const RoutinePage = () => {
       // Simulamos datos para la demostración
       const mockRoutine: Exercise[] = [
         // Lunes - Pecho y Tríceps
-        { id: '1', name: 'Press de banca', sets: 4, reps: '8-10', rest: '90 seg', day: 'Lunes' },
-        { id: '2', name: 'Press inclinado con mancuernas', sets: 3, reps: '10-12', rest: '60 seg', day: 'Lunes' },
-        { id: '3', name: 'Aperturas en máquina', sets: 3, reps: '12-15', rest: '60 seg', day: 'Lunes' },
-        { id: '4', name: 'Fondos en paralelas', sets: 3, reps: '10-12', rest: '60 seg', day: 'Lunes' },
-        { id: '5', name: 'Extensiones de tríceps en polea', sets: 3, reps: '12-15', rest: '60 seg', day: 'Lunes' },
+        { id: '1', name: 'Press de banca', sets: 4, reps: '8-10', rest: '90 seg', day: 'Lunes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Bench-Press.jpg', mediaType: 'image' },
+        { id: '2', name: 'Press inclinado con mancuernas', sets: 3, reps: '10-12', rest: '60 seg', day: 'Lunes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2017/06/Incline-Dumbbell-Press.jpg', mediaType: 'image' },
+        { id: '3', name: 'Aperturas en máquina', sets: 3, reps: '12-15', rest: '60 seg', day: 'Lunes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Pec-Deck-Machine.jpg', mediaType: 'image' },
+        { id: '4', name: 'Fondos en paralelas', sets: 3, reps: '10-12', rest: '60 seg', day: 'Lunes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2017/01/Triceps-Dips.jpg', mediaType: 'image' },
+        { id: '5', name: 'Extensiones de tríceps en polea', sets: 3, reps: '12-15', rest: '60 seg', day: 'Lunes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Triceps-Pushdown.jpg', mediaType: 'image' },
         
         // Martes - Espalda y Bíceps
-        { id: '6', name: 'Dominadas', sets: 4, reps: 'Máximas', rest: '90 seg', day: 'Martes' },
-        { id: '7', name: 'Remo con barra', sets: 3, reps: '8-10', rest: '90 seg', day: 'Martes' },
-        { id: '8', name: 'Remo en máquina', sets: 3, reps: '10-12', rest: '60 seg', day: 'Martes' },
-        { id: '9', name: 'Curl de bíceps con barra', sets: 3, reps: '10-12', rest: '60 seg', day: 'Martes' },
-        { id: '10', name: 'Curl martillo', sets: 3, reps: '12-15', rest: '60 seg', day: 'Martes' },
+        { id: '6', name: 'Dominadas', sets: 4, reps: 'Máximas', rest: '90 seg', day: 'Martes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Pull-Ups.jpg', mediaType: 'image' },
+        { id: '7', name: 'Remo con barra', sets: 3, reps: '8-10', rest: '90 seg', day: 'Martes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Barbell-Row.jpg', mediaType: 'image' },
+        { id: '8', name: 'Remo en máquina', sets: 3, reps: '10-12', rest: '60 seg', day: 'Martes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Seated-Row.jpg', mediaType: 'image' },
+        { id: '9', name: 'Curl de bíceps con barra', sets: 3, reps: '10-12', rest: '60 seg', day: 'Martes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Barbell-Curl.jpg', mediaType: 'image' },
+        { id: '10', name: 'Curl martillo', sets: 3, reps: '12-15', rest: '60 seg', day: 'Martes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Hammer-Curl.jpg', mediaType: 'image' },
         
         // Miércoles - Piernas
-        { id: '11', name: 'Sentadillas', sets: 4, reps: '8-10', rest: '120 seg', day: 'Miércoles' },
-        { id: '12', name: 'Prensa de piernas', sets: 3, reps: '10-12', rest: '90 seg', day: 'Miércoles' },
-        { id: '13', name: 'Extensiones de cuádriceps', sets: 3, reps: '12-15', rest: '60 seg', day: 'Miércoles' },
-        { id: '14', name: 'Curl femoral', sets: 3, reps: '12-15', rest: '60 seg', day: 'Miércoles' },
-        { id: '15', name: 'Elevaciones de pantorrilla', sets: 4, reps: '15-20', rest: '60 seg', day: 'Miércoles' },
+        { id: '11', name: 'Sentadillas', sets: 4, reps: '8-10', rest: '120 seg', day: 'Miércoles', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Squat.jpg', mediaType: 'image' },
+        { id: '12', name: 'Prensa de piernas', sets: 3, reps: '10-12', rest: '90 seg', day: 'Miércoles', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Leg-Press.jpg', mediaType: 'image' },
+        { id: '13', name: 'Extensiones de cuádriceps', sets: 3, reps: '12-15', rest: '60 seg', day: 'Miércoles', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Leg-Extension.jpg', mediaType: 'image' },
+        { id: '14', name: 'Curl femoral', sets: 3, reps: '12-15', rest: '60 seg', day: 'Miércoles', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Leg-Curl.jpg', mediaType: 'image' },
+        { id: '15', name: 'Elevaciones de pantorrilla', sets: 4, reps: '15-20', rest: '60 seg', day: 'Miércoles', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Standing-Calf-Raise.jpg', mediaType: 'image' },
         
         // Jueves - Hombros y Trapecios
-        { id: '16', name: 'Press militar', sets: 4, reps: '8-10', rest: '90 seg', day: 'Jueves' },
-        { id: '17', name: 'Elevaciones laterales', sets: 3, reps: '12-15', rest: '60 seg', day: 'Jueves' },
-        { id: '18', name: 'Elevaciones frontales', sets: 3, reps: '12-15', rest: '60 seg', day: 'Jueves' },
-        { id: '19', name: 'Pájaros', sets: 3, reps: '12-15', rest: '60 seg', day: 'Jueves' },
-        { id: '20', name: 'Encogimientos con barra', sets: 4, reps: '12-15', rest: '60 seg', day: 'Jueves' },
+        { id: '16', name: 'Press militar', sets: 4, reps: '8-10', rest: '90 seg', day: 'Jueves', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Shoulder-Press.jpg', mediaType: 'image' },
+        { id: '17', name: 'Elevaciones laterales', sets: 3, reps: '12-15', rest: '60 seg', day: 'Jueves', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Lateral-Raise.jpg', mediaType: 'image' },
+        { id: '18', name: 'Elevaciones frontales', sets: 3, reps: '12-15', rest: '60 seg', day: 'Jueves', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Front-Raise.jpg', mediaType: 'image' },
+        { id: '19', name: 'Pájaros', sets: 3, reps: '12-15', rest: '60 seg', day: 'Jueves', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Reverse-Fly.jpg', mediaType: 'image' },
+        { id: '20', name: 'Encogimientos con barra', sets: 4, reps: '12-15', rest: '60 seg', day: 'Jueves', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Barbell-Shrug.jpg', mediaType: 'image' },
         
         // Viernes - Full Body
-        { id: '21', name: 'Press de banca', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes' },
-        { id: '22', name: 'Remo con mancuerna', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes' },
-        { id: '23', name: 'Sentadillas', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes' },
-        { id: '24', name: 'Press militar', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes' },
-        { id: '25', name: 'Curl de bíceps', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes' },
+        { id: '21', name: 'Press de banca', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Bench-Press.jpg', mediaType: 'image' },
+        { id: '22', name: 'Remo con mancuerna', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Dumbbell-Row.jpg', mediaType: 'image' },
+        { id: '23', name: 'Sentadillas', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Squat.jpg', mediaType: 'image' },
+        { id: '24', name: 'Press militar', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Shoulder-Press.jpg', mediaType: 'image' },
+        { id: '25', name: 'Curl de bíceps', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Barbell-Curl.jpg', mediaType: 'image' },
       ];
       
       setRoutine(mockRoutine);
@@ -97,7 +99,73 @@ const RoutinePage = () => {
 
   const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
   const activeDays = Array.from(new Set(routine.map(exercise => exercise.day)));
-  
+
+  const getDayIcon = (day: string) => {
+    switch (day) {
+      case 'Lunes':
+        return '💪';
+      case 'Martes':
+        return '🏋️';
+      case 'Miércoles':
+        return '🏃';
+      case 'Jueves':
+        return '⚡';
+      case 'Viernes':
+        return '🔥';
+      case 'Sábado':
+        return '🥊';
+      case 'Domingo':
+        return '🧘';
+      default:
+        return '📅';
+    }
+  };
+
+  const getMuscleGroupsForDay = (exercises: Exercise[]) => {
+    // Mapeo de ejercicios a grupos musculares
+    const muscleGroupMap: {[key: string]: string[]} = {
+      'Press de banca': ['Pecho', 'Tríceps'],
+      'Press inclinado': ['Pecho', 'Hombros'],
+      'Aperturas': ['Pecho'],
+      'Fondos': ['Pecho', 'Tríceps'],
+      'Extensiones de tríceps': ['Tríceps'],
+      'Dominadas': ['Espalda', 'Bíceps'],
+      'Remo': ['Espalda'],
+      'Curl de bíceps': ['Bíceps'],
+      'Curl martillo': ['Bíceps', 'Antebrazos'],
+      'Sentadillas': ['Piernas', 'Glúteos'],
+      'Prensa de piernas': ['Piernas'],
+      'Extensiones de cuádriceps': ['Cuádriceps'],
+      'Curl femoral': ['Isquiotibiales'],
+      'Elevaciones de pantorrilla': ['Pantorrillas'],
+      'Press militar': ['Hombros', 'Tríceps'],
+      'Elevaciones laterales': ['Hombros'],
+      'Elevaciones frontales': ['Hombros'],
+      'Pájaros': ['Hombros', 'Espalda'],
+      'Encogimientos': ['Trapecios']
+    };
+    
+    // Conjunto para almacenar grupos musculares únicos
+    const muscleGroups = new Set<string>();
+    
+    exercises.forEach(exercise => {
+      // Buscar coincidencias parciales en el nombre del ejercicio
+      Object.keys(muscleGroupMap).forEach(key => {
+        if (exercise.name.toLowerCase().includes(key.toLowerCase())) {
+          muscleGroupMap[key].forEach(group => muscleGroups.add(group));
+        }
+      });
+    });
+    
+    // Si no se encontraron grupos musculares, mostrar un mensaje genérico
+    if (muscleGroups.size === 0) {
+      return 'Entrenamiento completo';
+    }
+    
+    // Limitar a 3 grupos para no sobrecargar la UI
+    return Array.from(muscleGroups).slice(0, 3).join(', ');
+  };
+
   const filteredExercises = routine.filter(exercise => exercise.day === activeDay);
 
   if (loading || loadingRoutine) {
@@ -133,20 +201,35 @@ const RoutinePage = () => {
           {/* Selector de días */}
           <div className="border-t border-gray-200">
             <div className="bg-gray-50 px-4 py-3">
-              <div className="flex space-x-1 overflow-x-auto">
-                {days.filter(day => activeDays.includes(day)).map(day => (
-                  <button
-                    key={day}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
-                      activeDay === day
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-100'
-                    }`}
-                    onClick={() => setActiveDay(day)}
-                  >
-                    {day}
-                  </button>
-                ))}
+              <h4 className="text-md font-medium text-gray-900 mb-3">Selecciona tu día de entrenamiento:</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                {days.filter(day => activeDays.includes(day)).map(day => {
+                  // Obtener los ejercicios para este día
+                  const dayExercises = routine.filter(ex => ex.day === day);
+                  // Obtener los grupos musculares trabajados (simplificado)
+                  const muscleGroups = getMuscleGroupsForDay(dayExercises);
+                  
+                  return (
+                    <button
+                      key={day}
+                      className={`px-4 py-3 text-sm font-medium rounded-md flex flex-col items-center justify-center transition-all ${
+                        activeDay === day
+                          ? 'bg-gray-900 text-white shadow-md transform scale-105'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                      onClick={() => setActiveDay(day)}
+                    >
+                      <span className="text-lg mb-1">{getDayIcon(day)}</span>
+                      <span className="font-semibold">{day}</span>
+                      <span className="text-xs mt-1 text-center">
+                        {muscleGroups}
+                      </span>
+                      <span className="text-xs mt-1">
+                        {dayExercises.length} ejercicios
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -179,6 +262,27 @@ const RoutinePage = () => {
                     <tr key={exercise.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{exercise.name}</div>
+                        {exercise.mediaUrl && (
+                          <div className="mt-2">
+                            {exercise.mediaType === 'image' ? (
+                              <img 
+                                src={exercise.mediaUrl} 
+                                alt={`Demostración de ${exercise.name}`} 
+                                className="h-20 w-auto object-cover rounded cursor-pointer hover:opacity-90"
+                                onClick={() => window.open(exercise.mediaUrl, '_blank')}
+                              />
+                            ) : (
+                              <video 
+                                src={exercise.mediaUrl} 
+                                controls 
+                                className="h-20 w-auto object-cover rounded"
+                                controlsList="nodownload"
+                              >
+                                Tu navegador no soporta videos HTML5.
+                              </video>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{exercise.sets}</div>

@@ -53,6 +53,22 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
   const [hasRoutine, setHasRoutine] = useState(false);
   const [routineText, setRoutineText] = useState('');
   const [showRoutineModal, setShowRoutineModal] = useState(false);
+  const [isEditingRoutine, setIsEditingRoutine] = useState(false);
+  const [routineExercises, setRoutineExercises] = useState<any[]>([]);
+  const [currentExercise, setCurrentExercise] = useState<any>({
+    id: '',
+    name: '',
+    sets: 0,
+    reps: '',
+    rest: '',
+    notes: '',
+    day: 'Lunes',
+    mediaUrl: '',
+    mediaType: 'image'
+  });
+  const [showExerciseForm, setShowExerciseForm] = useState(false);
+  const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  const [adminActiveDay, setAdminActiveDay] = useState('');
 
   // Verificar si el usuario está autenticado y es administrador
   useEffect(() => {
@@ -409,7 +425,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       //     'Content-Type': 'application/json',
       //     'Authorization': `Bearer ${token}`
       //   },
-      //   body: JSON.stringify({ routine: routineText, has_routine: true })
+      //   body: JSON.stringify({ routine: JSON.parse(routineText), has_routine: true })
       // });
       // const data = await response.json();
       
@@ -418,7 +434,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
         setUserData({
           ...userData,
           has_routine: true,
-          routine: routineText
+          routine: JSON.parse(routineText)
         });
         setHasRoutine(true);
         setShowRoutineModal(false);
@@ -463,6 +479,99 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       toast.error('Error al eliminar la rutina');
       setIsLoading(false);
     }
+  };
+
+  // Función para inicializar la edición de rutina
+  const initRoutineEdit = () => {
+    setShowRoutineModal(true);
+    try {
+      if (userData?.routine) {
+        const routineData = typeof userData.routine === 'string' 
+          ? JSON.parse(userData.routine) 
+          : userData.routine;
+        
+        setRoutineExercises(Array.isArray(routineData) ? routineData : []);
+        setRoutineText(JSON.stringify(routineData, null, 2));
+      } else {
+        setRoutineExercises([]);
+        setRoutineText('[]');
+      }
+      setIsEditingRoutine(true);
+    } catch (error) {
+      console.error('Error al parsear la rutina:', error);
+      setRoutineExercises([]);
+      setRoutineText('[]');
+    }
+  };
+
+  // Función para agregar o actualizar un ejercicio
+  const saveExercise = () => {
+    if (!currentExercise.name || !currentExercise.sets || !currentExercise.reps || !currentExercise.rest || !currentExercise.day) {
+      toast.error('Por favor completa todos los campos obligatorios');
+      return;
+    }
+
+    let updatedExercises;
+    if (currentExercise.id) {
+      // Actualizar ejercicio existente
+      updatedExercises = routineExercises.map(ex => 
+        ex.id === currentExercise.id ? currentExercise : ex
+      );
+    } else {
+      // Agregar nuevo ejercicio con ID único
+      const newExercise = {
+        ...currentExercise,
+        id: Date.now().toString()
+      };
+      updatedExercises = [...routineExercises, newExercise];
+    }
+
+    setRoutineExercises(updatedExercises);
+    setRoutineText(JSON.stringify(updatedExercises, null, 2));
+    resetExerciseForm();
+  };
+
+  // Función para editar un ejercicio existente
+  const editExercise = (exercise: any) => {
+    setCurrentExercise(exercise);
+    setShowExerciseForm(true);
+  };
+
+  // Función para eliminar un ejercicio
+  const deleteExercise = (id: string) => {
+    const updatedExercises = routineExercises.filter(ex => ex.id !== id);
+    setRoutineExercises(updatedExercises);
+    setRoutineText(JSON.stringify(updatedExercises, null, 2));
+  };
+
+  // Función para resetear el formulario de ejercicio
+  const resetExerciseForm = () => {
+    setCurrentExercise({
+      id: '',
+      name: '',
+      sets: 0,
+      reps: '',
+      rest: '',
+      notes: '',
+      day: 'Lunes',
+      mediaUrl: '',
+      mediaType: 'image'
+    });
+    setShowExerciseForm(false);
+  };
+
+  // Función para duplicar un ejercicio en otro día
+  const duplicateExercise = (exercise: any, targetDay: string) => {
+    const newExercise = {
+      ...exercise,
+      id: Date.now().toString(),
+      day: targetDay
+    };
+    
+    const updatedExercises = [...routineExercises, newExercise];
+    setRoutineExercises(updatedExercises);
+    setRoutineText(JSON.stringify(updatedExercises, null, 2));
+    toast.success(`Ejercicio duplicado para el día ${targetDay}`);
   };
 
   if (loading || isLoading) {
@@ -855,10 +964,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
                 {hasRoutine ? (
                   <>
                     <button
-                      onClick={() => {
-                        setShowRoutineModal(true);
-                        setRoutineText(userData?.routine || '');
-                      }}
+                      onClick={initRoutineEdit}
                       className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
                     >
                       Editar rutina
@@ -872,7 +978,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
                   </>
                 ) : (
                   <button
-                    onClick={() => setShowRoutineModal(true)}
+                    onClick={initRoutineEdit}
                     className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
                   >
                     Asignar rutina
@@ -885,7 +991,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h4 className="text-md font-medium text-gray-900 mb-4">Rutina actual:</h4>
                 <div className="bg-white p-4 rounded border border-gray-200 whitespace-pre-wrap">
-                  {userData?.routine || 'No hay información disponible.'}
+                  {JSON.stringify(userData?.routine, null, 2) || 'No hay información disponible.'}
                 </div>
                 <div className="mt-4 text-sm text-gray-600">
                   <p>Esta rutina está disponible para el usuario en su panel de control.</p>
@@ -982,27 +1088,194 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       {/* Modal para asignar/editar rutina */}
       {showRoutineModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-3xl">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
-              {hasRoutine ? 'Editar rutina' : 'Asignar rutina'}
+              {hasRoutine ? 'Editar rutina de entrenamiento' : 'Asignar rutina de entrenamiento'}
             </h3>
+            
             <div className="mb-4">
-              <label htmlFor="routine" className="block text-sm font-medium text-gray-700 mb-2">
-                Detalles de la rutina
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="text-md font-medium">Ejercicios de la rutina</h4>
+                <button
+                  onClick={() => setShowExerciseForm(true)}
+                  className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                >
+                  Agregar ejercicio
+                </button>
+              </div>
+              
+              {/* Selector de días para filtrar ejercicios */}
+              <div className="mb-4">
+                <div className="flex space-x-1 overflow-x-auto pb-2">
+                  <button
+                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                      !adminActiveDay
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                    }`}
+                    onClick={() => setAdminActiveDay('')}
+                  >
+                    Todos
+                  </button>
+                  {days.map(day => (
+                    <button
+                      key={day}
+                      className={`px-4 py-2 text-sm font-medium rounded-md ${
+                        adminActiveDay === day
+                          ? 'bg-gray-900 text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                      }`}
+                      onClick={() => setAdminActiveDay(day)}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {routineExercises.length > 0 ? (
+                <div className="border rounded-lg overflow-hidden">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ejercicio
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Día
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Series x Reps
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Multimedia
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Acciones
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {routineExercises
+                        .filter(exercise => !adminActiveDay || exercise.day === adminActiveDay)
+                        .map((exercise) => (
+                        <tr key={exercise.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">{exercise.name}</div>
+                            <div className="text-xs text-gray-500">Descanso: {exercise.rest}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{exercise.day}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{exercise.sets} x {exercise.reps}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {exercise.mediaUrl ? (
+                              <div className="flex items-center">
+                                {exercise.mediaType === 'image' ? (
+                                  <img 
+                                    src={exercise.mediaUrl} 
+                                    alt={`Demostración de ${exercise.name}`} 
+                                    className="h-10 w-auto object-cover rounded"
+                                  />
+                                ) : (
+                                  <video 
+                                    src={exercise.mediaUrl} 
+                                    className="h-10 w-auto object-cover rounded"
+                                  >
+                                    Tu navegador no soporta videos HTML5.
+                                  </video>
+                                )}
+                                <span className="ml-2 text-xs text-gray-500">{exercise.mediaType === 'image' ? 'Imagen' : 'Video'}</span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-500">No disponible</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                              onClick={() => editExercise(exercise)}
+                              className="text-indigo-600 hover:text-indigo-900 mr-3"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => deleteExercise(exercise.id)}
+                              className="text-red-600 hover:text-red-900 mr-3"
+                            >
+                              Eliminar
+                            </button>
+                            <div className="relative inline-block text-left">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const dropdown = e.currentTarget.nextElementSibling;
+                                  if (dropdown) {
+                                    dropdown.classList.toggle('hidden');
+                                  }
+                                }}
+                                className="text-green-600 hover:text-green-900"
+                              >
+                                Duplicar
+                              </button>
+                              <div className="hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                                <div className="py-1" role="menu" aria-orientation="vertical">
+                                  {days.filter(d => d !== exercise.day).map(day => (
+                                    <button
+                                      key={day}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        duplicateExercise(exercise, day);
+                                        e.currentTarget.closest('div.py-1')?.parentElement?.classList.add('hidden');
+                                      }}
+                                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                      role="menuitem"
+                                    >
+                                      Duplicar a {day}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                  No hay ejercicios en esta rutina. Haz clic en "Agregar ejercicio" para comenzar.
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-4">
+              <label htmlFor="routineText" className="block text-sm font-medium text-gray-700">
+                JSON de la rutina (avanzado)
               </label>
               <textarea
-                id="routine"
-                rows={15}
+                id="routineText"
+                rows={8}
                 value={routineText}
-                onChange={(e) => setRoutineText(e.target.value)}
-                placeholder="Ingresa los detalles de la rutina de entrenamiento..."
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                onChange={(e) => {
+                  setRoutineText(e.target.value);
+                  try {
+                    const parsed = JSON.parse(e.target.value);
+                    setRoutineExercises(Array.isArray(parsed) ? parsed : []);
+                  } catch (error) {
+                    // Error al parsear JSON, no actualizamos los ejercicios
+                  }
+                }}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono"
               />
-              <p className="mt-2 text-sm text-gray-500">
-                Puedes incluir ejercicios, series, repeticiones y cualquier otra instrucción para el usuario.
+              <p className="mt-2 text-xs text-gray-500">
+                Este es el formato JSON de la rutina. Puedes editarlo directamente si estás familiarizado con JSON, o utilizar la interfaz de arriba para una edición más sencilla.
               </p>
             </div>
-            <div className="flex justify-end space-x-3">
+            
+            <div className="mt-6 flex justify-end space-x-3">
               <button
                 onClick={() => setShowRoutineModal(false)}
                 className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
@@ -1011,10 +1284,112 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
               </button>
               <button
                 onClick={saveRoutine}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                 disabled={isLoading}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Guardando...' : 'Guardar rutina'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal para agregar/editar ejercicio */}
+      {showExerciseForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              {currentExercise.id ? 'Editar ejercicio' : 'Agregar ejercicio'}
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre del ejercicio</label>
+                <input
+                  type="text"
+                  id="name"
+                  value={currentExercise.name}
+                  onChange={(e) => setCurrentExercise({...currentExercise, name: e.target.value})}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="sets" className="block text-sm font-medium text-gray-700">Series</label>
+                <input
+                  type="number"
+                  id="sets"
+                  value={currentExercise.sets}
+                  onChange={(e) => setCurrentExercise({...currentExercise, sets: parseInt(e.target.value, 10)})}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="reps" className="block text-sm font-medium text-gray-700">Repeticiones</label>
+                <input
+                  type="text"
+                  id="reps"
+                  value={currentExercise.reps}
+                  onChange={(e) => setCurrentExercise({...currentExercise, reps: e.target.value})}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="rest" className="block text-sm font-medium text-gray-700">Descanso</label>
+                <input
+                  type="text"
+                  id="rest"
+                  value={currentExercise.rest}
+                  onChange={(e) => setCurrentExercise({...currentExercise, rest: e.target.value})}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="day" className="block text-sm font-medium text-gray-700">Día</label>
+                <select
+                  id="day"
+                  value={currentExercise.day}
+                  onChange={(e) => setCurrentExercise({...currentExercise, day: e.target.value})}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                >
+                  {days.map((day) => (
+                    <option key={day} value={day}>{day}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="mediaUrl" className="block text-sm font-medium text-gray-700">URL de multimedia (opcional)</label>
+                <input
+                  type="text"
+                  id="mediaUrl"
+                  value={currentExercise.mediaUrl}
+                  onChange={(e) => setCurrentExercise({...currentExercise, mediaUrl: e.target.value})}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="mediaType" className="block text-sm font-medium text-gray-700">Tipo de multimedia (opcional)</label>
+                <select
+                  id="mediaType"
+                  value={currentExercise.mediaType}
+                  onChange={(e) => setCurrentExercise({...currentExercise, mediaType: e.target.value})}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                >
+                  <option value="image">Imagen</option>
+                  <option value="video">Video</option>
+                </select>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={resetExerciseForm}
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={saveExercise}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                {currentExercise.id ? 'Guardar cambios' : 'Agregar ejercicio'}
               </button>
             </div>
           </div>
