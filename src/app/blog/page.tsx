@@ -11,7 +11,6 @@ interface BlogPost {
   title: string;
   excerpt: string;
   content: string;
-  author: string;
   date: string;
   image: string;
   category: string;
@@ -136,84 +135,13 @@ const BlogPage = () => {
                   />
                 </div>
                 <div className="p-6">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      {post.category}
-                    </span>
-                    <span className="text-sm text-gray-500">{post.date}</span>
-                  </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">{post.title}</h3>
                   <p className="text-base text-gray-500 mb-4">{post.excerpt}</p>
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 relative rounded-full overflow-hidden">
-                      <Image
-                        src="/images/avatar-placeholder.jpg"
-                        alt={post.author}
-                        fill
-                        style={{ objectFit: 'cover' }}
-                      />
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-900">{post.author}</p>
-                    </div>
-                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
-
-        {/* Paginación (simplificada) */}
-        <div className="mt-12 flex justify-center">
-          <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-            <a
-              href="#"
-              className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-            >
-              <span className="sr-only">Anterior</span>
-              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            </a>
-            <a
-              href="#"
-              aria-current="page"
-              className="z-10 bg-gray-900 border-gray-900 text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium"
-            >
-              1
-            </a>
-            <a
-              href="#"
-              className="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium"
-            >
-              2
-            </a>
-            <a
-              href="#"
-              className="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 hidden md:inline-flex relative items-center px-4 py-2 border text-sm font-medium"
-            >
-              3
-            </a>
-            <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-              ...
-            </span>
-            <a
-              href="#"
-              className="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium"
-            >
-              8
-            </a>
-            <a
-              href="#"
-              className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-            >
-              <span className="sr-only">Siguiente</span>
-              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
-            </a>
-          </nav>
-        </div>
       </div>
     </div>
   );
@@ -226,9 +154,8 @@ const sampleBlogPosts: BlogPost[] = [
     title: 'Cómo empezar tu rutina de entrenamiento',
     excerpt: 'Consejos prácticos para principiantes que quieren comenzar a entrenar de manera efectiva.',
     content: 'Contenido completo del artículo...',
-    author: 'María García',
     date: '15 Mar 2025',
-    image: '/images/blog-1.jpg',
+    image: '/images/rutinaEntrenamiento.jpeg',
     category: 'entrenamiento',
     tags: ['principiantes', 'rutina', 'consejos']
   },
@@ -237,9 +164,8 @@ const sampleBlogPosts: BlogPost[] = [
     title: 'Nutrición para ganar masa muscular',
     excerpt: 'Guía completa sobre qué alimentos consumir para maximizar el crecimiento muscular.',
     content: 'Contenido completo del artículo...',
-    author: 'Carlos Rodríguez',
     date: '10 Mar 2025',
-    image: '/images/blog-2.jpg',
+    image: '/images/masaMuscular.jpeg',
     category: 'nutrición',
     tags: ['proteínas', 'masa muscular', 'dieta']
   },
@@ -248,9 +174,8 @@ const sampleBlogPosts: BlogPost[] = [
     title: 'Los beneficios del entrenamiento de fuerza para mujeres',
     excerpt: 'Desmitificando creencias y explicando por qué las mujeres deberían incluir entrenamiento de fuerza.',
     content: 'Contenido completo del artículo...',
-    author: 'Laura Martínez',
     date: '5 Mar 2025',
-    image: '/images/blog-3.jpg',
+    image: '/images/fuerzaMujeres.jpeg',
     category: 'entrenamiento',
     tags: ['mujeres', 'fuerza', 'mitos']
   },
@@ -259,9 +184,8 @@ const sampleBlogPosts: BlogPost[] = [
     title: 'Cómo recuperarse después de un entrenamiento intenso',
     excerpt: 'Estrategias efectivas para optimizar la recuperación muscular y reducir el dolor.',
     content: 'Contenido completo del artículo...',
-    author: 'Javier López',
     date: '28 Feb 2025',
-    image: '/images/blog-4.jpg',
+    image: '/images/recuperarse.jpeg',
     category: 'recuperación',
     tags: ['descanso', 'dolor muscular', 'suplementos']
   },
@@ -270,9 +194,8 @@ const sampleBlogPosts: BlogPost[] = [
     title: 'Guía para una alimentación saludable',
     excerpt: 'Principios básicos para mantener una dieta equilibrada que apoye tus objetivos fitness.',
     content: 'Contenido completo del artículo...',
-    author: 'Ana Sánchez',
     date: '20 Feb 2025',
-    image: '/images/blog-5.jpg',
+    image: '/images/guiaAlimentacion.jpeg',
     category: 'nutrición',
     tags: ['dieta', 'salud', 'hábitos']
   },
@@ -281,9 +204,8 @@ const sampleBlogPosts: BlogPost[] = [
     title: 'Ejercicios para mejorar la postura',
     excerpt: 'Rutina de ejercicios específicos para corregir problemas posturales comunes.',
     content: 'Contenido completo del artículo...',
-    author: 'Diego Fernández',
     date: '15 Feb 2025',
-    image: '/images/blog-6.jpg',
+    image: '/images/mejorarPostura.jpeg',
     category: 'salud',
     tags: ['postura', 'dolor de espalda', 'oficina']
   }

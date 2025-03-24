@@ -36,12 +36,6 @@ const Navbar = () => {
                   Inicio
                 </Link>
                 <Link
-                  href="/memberships"
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Membresías
-                </Link>
-                <Link
                   href="/location"
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                 >
@@ -155,13 +149,6 @@ const Navbar = () => {
               onClick={() => setIsOpen(false)}
             >
               Inicio
-            </Link>
-            <Link
-              href="/memberships"
-              className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-              onClick={() => setIsOpen(false)}
-            >
-              Membresías
             </Link>
             <Link
               href="/location"
