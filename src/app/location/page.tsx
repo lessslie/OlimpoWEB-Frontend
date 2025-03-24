@@ -1,63 +1,9 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import BackgroundLogo from '@/components/BackgroundLogo';
 
-// Extender la interfaz Window para incluir google
-declare global {
-  interface Window {
-    google: any;
-  }
-}
-
 const LocationPage = () => {
-  // Cargar el script de Google Maps cuando el componente se monte
-  useEffect(() => {
-    // Esta función inicializará el mapa una vez que el script esté cargado
-    const initMap = () => {
-      const mapElement = document.getElementById('map');
-      if (mapElement && window.google) {
-        // Coordenadas exactas del gimnasio Olimpo en Quines, San Luis
-        const gymLocation = { lat: -32.2358553, lng: -65.8059874 };
-        
-        // Crear el mapa
-        const map = new window.google.maps.Map(mapElement, {
-          center: gymLocation,
-          zoom: 17,
-        });
-        
-        // Añadir un marcador en la ubicación del gimnasio
-        const marker = new window.google.maps.Marker({
-          position: gymLocation,
-          map: map,
-          title: 'Olimpo Gym',
-          animation: window.google.maps.Animation.DROP
-        });
-      }
-    };
-
-    // Cargar el script de Google Maps si aún no está cargado
-    if (!window.google) {
-      const script = document.createElement('script');
-      // Usar el mapa sin API key, lo que permite un uso básico sin necesidad de credenciales
-      script.src = `https://maps.googleapis.com/maps/api/js?libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = initMap;
-      document.head.appendChild(script);
-    } else {
-      initMap();
-    }
-    
-    // Limpieza al desmontar
-    return () => {
-      const script = document.querySelector('script[src*="maps.googleapis.com/maps/api"]');
-      if (script) {
-        script.remove();
-      }
-    };
-  }, []);
-
   return (
     <div className="min-h-screen bg-white py-12">
       <BackgroundLogo opacity={0.03} />
@@ -73,7 +19,17 @@ const LocationPage = () => {
 
         {/* Mapa */}
         <div className="mb-8 border border-gray-200 rounded-lg overflow-hidden">
-          <div id="map" className="h-96 w-full"></div>
+          <div className="h-96 w-full">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3393.5726521041!2d-65.8085623!3d-32.2358553!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95d4917ffe2738c7%3A0x5af9065b5a24a2cd!2sOlimpo+Gym!5e0!3m2!1ses-419!2sar!4v1711292292889!5m2!1ses-419!2sar" 
+              width="100%" 
+              height="100%" 
+              style={{ border: 0 }} 
+              allowFullScreen 
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
         </div>
         
         {/* Información de contacto en dos columnas */}

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // Definición de tipos para las clases
 interface GymClass {
@@ -92,6 +93,7 @@ const classesData: GymClass[] = [
 
 const ClassesSection: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState<GymClass | null>(null);
+  const router = useRouter();
 
   const openClassDetails = (gymClass: GymClass) => {
     setSelectedClass(gymClass);
@@ -99,6 +101,19 @@ const ClassesSection: React.FC = () => {
 
   const closeClassDetails = () => {
     setSelectedClass(null);
+  };
+
+  // Función para verificar si una clase permite reservas
+  const allowsReservation = (className: string): boolean => {
+    const allowedClasses = ['Kickboxing', 'Sala de Musculación', 'Entrenamiento Pliométrico'];
+    return allowedClasses.includes(className);
+  };
+
+  // Función para redirigir a la página de contacto con mensaje prellenado
+  const handleReservation = (className: string) => {
+    const message = encodeURIComponent(`Hola, me gustaría reservar una clase de ${className}. Por favor, contáctenme para confirmar disponibilidad.`);
+    router.push(`/contact?message=${message}`);
+    closeClassDetails();
   };
 
   return (
@@ -126,6 +141,7 @@ const ClassesSection: React.FC = () => {
                   src={gymClass.image} 
                   alt={gymClass.name}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   style={{ objectFit: 'cover' }}
                   className="group-hover:opacity-75 transition-opacity"
                   onError={(e) => {
@@ -186,14 +202,12 @@ const ClassesSection: React.FC = () => {
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="relative h-64 sm:h-72">
                 <Image 
-                  src={selectedClass.image} 
-                  alt={selectedClass.name}
+                  src={selectedClass?.image || '/images/default-class.jpg'} 
+                  alt={selectedClass?.name || 'Clase de gimnasio'}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 700px"
                   style={{ objectFit: 'cover' }}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = '/images/class-placeholder.jpg';
-                  }}
+                  className="opacity-75"
                 />
                 <button 
                   type="button" 
@@ -257,12 +271,23 @@ const ClassesSection: React.FC = () => {
                 </div>
               </div>
               <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button 
-                  type="button" 
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-900 text-base font-medium text-white hover:bg-gray-800 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
-                >
-                  Reservar Clase
-                </button>
+                {allowsReservation(selectedClass.name) ? (
+                  <button 
+                    type="button" 
+                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-900 text-base font-medium text-white hover:bg-gray-800 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+                    onClick={() => handleReservation(selectedClass.name)}
+                  >
+                    Reservar Clase
+                  </button>
+                ) : (
+                  <button 
+                    type="button" 
+                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-400 text-base font-medium text-white cursor-not-allowed sm:ml-3 sm:w-auto sm:text-sm"
+                    disabled
+                  >
+                    Próximamente
+                  </button>
+                )}
                 <button 
                   type="button" 
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"

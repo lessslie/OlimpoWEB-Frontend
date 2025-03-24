@@ -129,6 +129,7 @@ const TestimonialsSection: React.FC = () => {
                         src={testimonial.image}
                         alt={testimonial.name}
                         fill
+                        sizes="(max-width: 768px) 48px, 96px"
                         style={{ objectFit: 'cover' }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;

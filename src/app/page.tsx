@@ -23,7 +23,7 @@ export default function Home() {
               alt="Olimpo Logo"
               width={400}
               height={400}
-              style={{ objectFit: 'contain', opacity: 0.7 }}
+              style={{ objectFit: 'contain', opacity: 0.7, width: 'auto', height: 'auto' }}
               priority
             />
           </div>

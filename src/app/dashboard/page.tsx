@@ -21,6 +21,7 @@ const Dashboard = () => {
     startDate: null,
     endDate: null,
   });
+  const [hasRoutine, setHasRoutine] = useState(false);
 
   useEffect(() => {
     // Redirigir si no está autenticado
@@ -38,6 +39,11 @@ const Dashboard = () => {
         startDate: user.membership_start,
         endDate: user.membership_end,
       });
+      
+      // Verificar si el usuario tiene una rutina asignada
+      // En un entorno real, esto sería una llamada a la API
+      // Simulamos con una propiedad del usuario
+      setHasRoutine(user.has_routine || false);
     }
   }, [user]);
 
@@ -151,13 +157,14 @@ const Dashboard = () => {
                 Mi rutina
               </h3>
               <div className="mt-2 max-w-xl text-sm text-gray-500">
-                <p>Acá está tu rutina personalizada.</p>
+                <p>{hasRoutine ? 'Acá está tu rutina personalizada.' : 'Aún no tienes una rutina asignada. Un entrenador te asignará una pronto.'}</p>
               </div>
               <div className="mt-5">
                 <button
                   type="button"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                  onClick={() => router.push('/dashboard')}
+                  className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${hasRoutine ? 'bg-gray-900 hover:bg-gray-700' : 'bg-gray-400 cursor-not-allowed'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500`}
+                  onClick={() => hasRoutine && router.push('/dashboard/routine')}
+                  disabled={!hasRoutine}
                 >
                   Ver mi rutina
                 </button>
@@ -180,6 +187,48 @@ const Dashboard = () => {
                   onClick={() => router.push('/dashboard/profile')}
                 >
                   Editar perfil
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Nuevo botón para escanear QR */}
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
+                Registrar asistencia
+              </h3>
+              <div className="mt-2 max-w-xl text-sm text-gray-500">
+                <p>Escanea el código QR en la entrada del gimnasio para registrar tu asistencia.</p>
+              </div>
+              <div className="mt-5">
+                <button
+                  type="button"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  onClick={() => router.push('/mobile/scan-qr')}
+                >
+                  Escanear QR
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Nuevo botón para historial de asistencias */}
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
+                Historial de asistencias
+              </h3>
+              <div className="mt-2 max-w-xl text-sm text-gray-500">
+                <p>Revisa tu historial de asistencias al gimnasio.</p>
+              </div>
+              <div className="mt-5">
+                <button
+                  type="button"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  onClick={() => router.push('/dashboard/attendance-history')}
+                >
+                  Ver historial
                 </button>
               </div>
             </div>

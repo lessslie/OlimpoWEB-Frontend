@@ -1,89 +1,177 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import BackgroundLogo from '@/components/BackgroundLogo';
 import toast from 'react-hot-toast';
+import { apiService } from '@/services/api.service';
+import { useCart } from '@/contexts/CartContext';
 
 interface Product {
   id: string;
   name: string;
   description: string;
   price: number;
-  image: string;
+  image_url?: string;
   category: string;
+  stock: number;
+  available: boolean;
+  featured?: boolean;
 }
 
 const ShopPage = () => {
   const router = useRouter();
-  const [cart, setCart] = useState<{[key: string]: number}>({});
-  const [loading, setLoading] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [categories, setCategories] = useState<string[]>([]);
+  const { addItem } = useCart();
 
-  // Productos de ejemplo
-  const products: Product[] = [
-    {
-      id: '1',
-      name: 'Botella Deportiva Premium',
-      description: 'Botella de acero inoxidable con aislamiento térmico, perfecta para mantener tus bebidas frías durante el entrenamiento.',
-      price: 24.99,
-      image: '/images/placeholder.jpg',
-      category: 'accesorios'
-    },
-    {
-      id: '2',
-      name: 'Guantes de Entrenamiento',
-      description: 'Guantes de alta calidad con soporte para muñeca, ideales para levantamiento de pesas y entrenamiento de fuerza.',
-      price: 19.99,
-      image: '/images/placeholder.jpg',
-      category: 'accesorios'
-    },
-    {
-      id: '3',
-      name: 'Proteína Whey Premium',
-      description: 'Proteína de suero de leche de alta calidad con 25g de proteína por porción. Sabor chocolate.',
-      price: 39.99,
-      image: '/images/placeholder.jpg',
-      category: 'suplementos'
-    },
-    {
-      id: '4',
-      name: 'Camiseta Deportiva',
-      description: 'Camiseta transpirable de secado rápido, perfecta para tus entrenamientos intensos.',
-      price: 29.99,
-      image: '/images/placeholder.jpg',
-      category: 'ropa'
-    },
-    {
-      id: '5',
-      name: 'Banda de Resistencia',
-      description: 'Set de bandas elásticas de resistencia para entrenamiento en casa o en el gimnasio.',
-      price: 15.99,
-      image: '/images/placeholder.jpg',
-      category: 'accesorios'
-    },
-    {
-      id: '6',
-      name: 'Pre-Entrenamiento',
-      description: 'Fórmula avanzada para maximizar tu energía y rendimiento durante el entrenamiento.',
-      price: 34.99,
-      image: '/images/placeholder.jpg',
-      category: 'suplementos'
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // Función para obtener los productos
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      // En un entorno real, esto sería una llamada a la API
+      // const response = await apiService.get('/products');
+      // const data = response.data;
+      
+      // Simulamos datos para la demostración
+      const mockProducts: Product[] = [
+        {
+          id: '1',
+          name: 'Proteína Whey 1kg',
+          description: 'Proteína de suero de leche de alta calidad para optimizar la recuperación muscular.',
+          price: 15000,
+          image_url: 'https://via.placeholder.com/300',
+          category: 'Suplementos',
+          stock: 25,
+          available: true,
+          featured: true
+        },
+        {
+          id: '2',
+          name: 'Guantes de Kickboxing',
+          description: 'Guantes profesionales para entrenamiento de kickboxing con protección extra para las muñecas.',
+          price: 12000,
+          image_url: 'https://via.placeholder.com/300',
+          category: 'Equipamiento',
+          stock: 15,
+          available: true
+        },
+        {
+          id: '3',
+          name: 'Shaker 600ml',
+          description: 'Botella mezcladora para preparar batidos de proteínas y suplementos.',
+          price: 3500,
+          image_url: 'https://via.placeholder.com/300',
+          category: 'Accesorios',
+          stock: 50,
+          available: true
+        },
+        {
+          id: '4',
+          name: 'Creatina Monohidrato 300g',
+          description: 'Suplemento para aumentar la fuerza y el rendimiento durante entrenamientos intensos.',
+          price: 8000,
+          image_url: 'https://via.placeholder.com/300',
+          category: 'Suplementos',
+          stock: 0,
+          available: false
+        },
+        {
+          id: '5',
+          name: 'Cinturón de levantamiento',
+          description: 'Cinturón de cuero para soporte lumbar durante levantamientos pesados.',
+          price: 9500,
+          image_url: 'https://via.placeholder.com/300',
+          category: 'Equipamiento',
+          stock: 10,
+          available: true,
+          featured: true
+        },
+        {
+          id: '6',
+          name: 'Camiseta Olimpo Gym',
+          description: 'Camiseta oficial del gimnasio, material transpirable y cómodo para entrenar.',
+          price: 5000,
+          image_url: 'https://via.placeholder.com/300',
+          category: 'Indumentaria',
+          stock: 30,
+          available: true
+        },
+        {
+          id: '7',
+          name: 'Pre-Entrenamiento 300g',
+          description: 'Fórmula avanzada para maximizar tu energía y rendimiento durante el entrenamiento.',
+          price: 12500,
+          image_url: 'https://via.placeholder.com/300',
+          category: 'Suplementos',
+          stock: 15,
+          available: true
+        },
+        {
+          id: '8',
+          name: 'Banda de Resistencia Set x3',
+          description: 'Set de bandas elásticas de resistencia para entrenamiento en casa o en el gimnasio.',
+          price: 6500,
+          image_url: 'https://via.placeholder.com/300',
+          category: 'Accesorios',
+          stock: 20,
+          available: true
+        }
+      ];
+      
+      // Filtrar solo productos disponibles para la tienda
+      const availableProducts = mockProducts.filter(product => product.available);
+      
+      // Extraer categorías únicas de los productos
+      const uniqueCategories = Array.from(new Set(availableProducts.map(product => product.category)));
+      setCategories(uniqueCategories);
+      
+      // Simular un retraso en la carga
+      setTimeout(() => {
+        setProducts(availableProducts);
+        setFilteredProducts(availableProducts);
+        setLoading(false);
+      }, 500);
+    } catch (error) {
+      console.error('Error al cargar los productos:', error);
+      toast.error('No se pudieron cargar los productos');
+      setLoading(false);
     }
-  ];
+  };
 
-  const handleAddToCart = (productId: string) => {
-    setCart(prevCart => {
-      const newCart = { ...prevCart };
-      newCart[productId] = (newCart[productId] || 0) + 1;
-      return newCart;
-    });
-    toast.success('Producto añadido al carrito');
+  // Filtrar productos por categoría
+  const filterByCategory = (category: string) => {
+    setActiveCategory(category);
+    
+    if (category === 'all') {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(product => product.category === category);
+      setFilteredProducts(filtered);
+    }
   };
 
   const handleViewAllProducts = () => {
     // Recargar la página de la tienda o aplicar filtros
+    filterByCategory('all');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Formatear precio
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 0
+    }).format(price);
   };
 
   return (
@@ -99,56 +187,108 @@ const ShopPage = () => {
           </p>
         </div>
 
-        {/* Filtros de categorías - Implementación futura */}
+        {/* Filtros de categorías */}
         <div className="mt-8 flex flex-wrap justify-center gap-2">
-          <button className="px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-medium">
+          <button 
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              activeCategory === 'all' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+            }`}
+            onClick={() => filterByCategory('all')}
+          >
             Todos
           </button>
-          <button className="px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium hover:bg-gray-200">
-            Suplementos
-          </button>
-          <button className="px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium hover:bg-gray-200">
-            Accesorios
-          </button>
-          <button className="px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium hover:bg-gray-200">
-            Ropa
-          </button>
-        </div>
-
-        <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {products.map(product => (
-            <div key={product.id} className="bg-gray-50 rounded-lg shadow-md overflow-hidden">
-              <div className="h-64 bg-gray-200 flex items-center justify-center relative">
-                <p className="text-gray-500">Imagen del producto</p>
-                {/* Cuando tengamos imágenes reales:
-                <Image 
-                  src={product.image} 
-                  alt={product.name} 
-                  fill 
-                  className="object-cover"
-                />
-                */}
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {product.name}
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  {product.description}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xl font-bold text-gray-900">${product.price.toFixed(2)}</span>
-                  <button 
-                    onClick={() => handleAddToCart(product.id)}
-                    className="bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors"
-                  >
-                    Añadir al carrito
-                  </button>
-                </div>
-              </div>
-            </div>
+          {categories.map(category => (
+            <button 
+              key={category}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                activeCategory === category ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              }`}
+              onClick={() => filterByCategory(category)}
+            >
+              {category}
+            </button>
           ))}
         </div>
+
+        {loading ? (
+          <div className="mt-12 flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+          </div>
+        ) : (
+          <>
+            {filteredProducts.length > 0 ? (
+              <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                {filteredProducts.map(product => (
+                  <div key={product.id} className="bg-gray-50 rounded-lg shadow-md overflow-hidden transition-transform hover:scale-[1.02]">
+                    <div 
+                      className="h-64 bg-gray-200 flex items-center justify-center relative cursor-pointer"
+                      onClick={() => router.push(`/shop/product/${product.id}`)}
+                    >
+                      {product.image_url ? (
+                        <img 
+                          src={product.image_url} 
+                          alt={product.name} 
+                          className="object-cover w-full h-full"
+                        />
+                      ) : (
+                        <p className="text-gray-500">Imagen no disponible</p>
+                      )}
+                      {product.featured && (
+                        <div className="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
+                          Destacado
+                        </div>
+                      )}
+                      {product.stock === 0 && (
+                        <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+                          <span className="text-white font-bold text-lg">AGOTADO</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-6">
+                      <h3 
+                        className="text-xl font-semibold text-gray-900 mb-2 cursor-pointer hover:text-blue-600"
+                        onClick={() => router.push(`/shop/product/${product.id}`)}
+                      >
+                        {product.name}
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        {product.description}
+                      </p>
+                      <div className="flex justify-between items-center mt-4">
+                        <span className="text-xl font-bold text-gray-900">
+                          {formatPrice(product.price)}
+                        </span>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addItem({
+                              id: product.id,
+                              name: product.name,
+                              price: product.price,
+                              image_url: product.image_url
+                            }, 1);
+                          }}
+                          disabled={!product.available}
+                          className={`px-3 py-2 rounded-md text-sm font-medium ${
+                            product.available 
+                              ? 'bg-gray-900 text-white hover:bg-gray-800' 
+                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          }`}
+                        >
+                          {product.available ? 'Añadir al carrito' : 'Agotado'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-12 text-center py-12 bg-gray-50 rounded-lg">
+                <p className="text-lg text-gray-600">No se encontraron productos en esta categoría.</p>
+              </div>
+            )}
+          </>
+        )}
 
         <div className="mt-12 text-center">
           <button 
@@ -171,19 +311,19 @@ const ShopPage = () => {
                 <svg className="h-6 w-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                Carrito de compras completo
-              </li>
-              <li className="flex items-start">
-                <svg className="h-6 w-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                Pasarela de pagos
+                Pasarela de pagos online
               </li>
               <li className="flex items-start">
                 <svg className="h-6 w-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                 </svg>
                 Seguimiento de pedidos
+              </li>
+              <li className="flex items-start">
+                <svg className="h-6 w-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Reseñas de productos
               </li>
             </ul>
           </div>

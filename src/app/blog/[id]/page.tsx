@@ -109,6 +109,7 @@ const BlogPostDetail = ({ params }: BlogPostDetailProps) => {
               src={post.image}
               alt={post.title}
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1000px"
               style={{ objectFit: 'cover' }}
               priority
             />
@@ -149,6 +150,7 @@ const BlogPostDetail = ({ params }: BlogPostDetailProps) => {
                   src="/images/personasEntrenandoEnGimnasio.png"
                   alt="Personas ejercitándose"
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   style={{ objectFit: 'cover' }}
                 />
               </div>
@@ -211,7 +213,9 @@ const BlogPostDetail = ({ params }: BlogPostDetailProps) => {
                       src={relatedPost.image}
                       alt={relatedPost.title}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       style={{ objectFit: 'cover' }}
+                      className="transition-transform duration-300 hover:scale-105"
                     />
                   </div>
                   <div className="p-4">

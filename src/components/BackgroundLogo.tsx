@@ -8,7 +8,7 @@ interface BackgroundLogoProps {
 }
 
 const BackgroundLogo: React.FC<BackgroundLogoProps> = ({ 
-  opacity = 0.1 
+  opacity = 0.2 
 }) => {
   return (
     <div
@@ -19,9 +19,10 @@ const BackgroundLogo: React.FC<BackgroundLogoProps> = ({
     >
       <div className="relative w-full h-full">
         <Image
-          src="/images/olimpoBlanco.jpeg"
+          src="/images/olimpoBlanco.png"
           alt="Olimpo Logo"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           style={{ objectFit: 'contain' }}
           priority
         />

@@ -1,0 +1,140 @@
+/* Estilos personalizados para el calendario */
+.calendar-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.react-calendar {
+  width: 100%;
+  max-width: 100%;
+  background: white;
+  border: none;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.react-calendar__navigation {
+  display: flex;
+  height: 44px;
+  margin-bottom: 1em;
+}
+
+.react-calendar__navigation button {
+  min-width: 44px;
+  background: none;
+  font-size: 1rem;
+  color: #333;
+}
+
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  background-color: #f0f0f0;
+  border-radius: 6px;
+}
+
+.react-calendar__month-view__weekdays {
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 0.8em;
+  color: #666;
+}
+
+.react-calendar__month-view__days__day--weekend {
+  color: #d10000;
+}
+
+.react-calendar__tile {
+  max-width: 100%;
+  padding: 10px 6px;
+  background: none;
+  text-align: center;
+  line-height: 16px;
+  font-size: 0.9rem;
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background-color: #f0f0f0;
+  border-radius: 6px;
+}
+
+.react-calendar__tile--now {
+  background: #ffff76;
+  border-radius: 6px;
+}
+
+.react-calendar__tile--now:enabled:hover,
+.react-calendar__tile--now:enabled:focus {
+  background: #ffffa9;
+}
+
+.react-calendar__tile--active {
+  background: #6366f1;
+  color: white;
+  border-radius: 6px;
+}
+
+.react-calendar__tile--active:enabled:hover,
+.react-calendar__tile--active:enabled:focus {
+  background: #5153cc;
+}
+
+/* Estilos para la tabla de asistencias */
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-table th,
+.attendance-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.attendance-table thead tr {
+  background-color: #f8fafc;
+  color: #4b5563;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.attendance-table tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+.attendance-table tbody td {
+  color: #4b5563;
+}
+
+/* Estilos para estados de asistencia */
+.status-active {
+  color: #059669;
+  font-weight: 500;
+}
+
+.status-inactive {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+/* Responsive para dispositivos móviles */
+@media (max-width: 768px) {
+  .react-calendar {
+    font-size: 0.85rem;
+  }
+  
+  .react-calendar__tile {
+    padding: 8px 4px;
+    font-size: 0.8rem;
+  }
+  
+  .attendance-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-hot-toast';
+import CartButton from './CartButton';
 
 const Navbar = () => {
   const { user, isAdmin, signOut } = useAuth();
@@ -64,6 +65,7 @@ const Navbar = () => {
           </div>
           <div className="hidden md:block">
             <div className="ml-4 flex items-center md:ml-6">
+              <CartButton />
               {!user ? (
                 <>
                   <Link
@@ -178,6 +180,10 @@ const Navbar = () => {
             >
               Contacto
             </Link>
+            <div className="flex items-center px-3 py-2">
+              <CartButton />
+              <span className="ml-2 text-gray-300">Carrito</span>
+            </div>
             {!user ? (
               <>
                 <Link

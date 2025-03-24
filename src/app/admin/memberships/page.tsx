@@ -240,7 +240,17 @@ const AdminMembershipsPage = () => {
                       <div className="text-sm text-gray-500">{membership.user?.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{membership.type}</div>
+                      <div className="text-sm text-gray-900">
+                        {membership.type === 'MONTHLY' ? 'Mensual' :
+                         membership.type === 'QUARTERLY' ? 'Trimestral' :
+                         membership.type === 'BIANNUAL' ? 'Semestral' :
+                         membership.type === 'ANNUAL' ? 'Anual' :
+                         membership.type === 'KICKBOXING_2' ? 'Kickboxing (2 veces/semana)' :
+                         membership.type === 'KICKBOXING_3' ? 'Kickboxing (3 veces/semana)' :
+                         membership.type === 'CUSTOM' ? 'Personalizada' :
+                         membership.type === 'MULTISPORT' ? 'Multideporte' :
+                         membership.type}
+                      </div>
                       {membership.days_per_week && (
                         <div className="text-sm text-gray-500">{membership.days_per_week} días/semana</div>
                       )}
