@@ -9,7 +9,9 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/:path*`,
+        destination: process.env.NODE_ENV === 'production'
+  ? 'https://olimpoweb-backend.onrender.com/api/:path*'
+  : 'http://localhost:3005/api/:path*',
       },
     ];
   },
