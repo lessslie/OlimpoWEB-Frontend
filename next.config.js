@@ -25,6 +25,25 @@ const nextConfig = {
         ...config.resolve.alias,
       };
     }
+    
+    // Add transpilation for react-qr-scanner
+    config.module.rules.push({
+      test: /node_modules\/react-qr-scanner/,
+      use: {
+        loader: 'babel-loader',
+        options: {
+          presets: ['next/babel'],
+          plugins: [
+            ['@babel/plugin-transform-runtime', {
+              corejs: 3,
+              helpers: true,
+              regenerator: true
+            }]
+          ]
+        }
+      }
+    });
+    
     return config;
   },
   // Configuración para manejar correctamente las rutas en Vercel
