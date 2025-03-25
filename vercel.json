@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm install @babel/runtime react-quill && npm run build",
+  "buildCommand": null,
   "installCommand": "npm install",
   "framework": "nextjs",
   "rewrites": [

@@ -9,9 +9,25 @@ import { toast } from "react-hot-toast";
 import dynamic from "next/dynamic";
 
 // Importación dinámica del editor para evitar problemas de SSR
-const ReactQuill = dynamic(() => import("react-quill"), {
-  ssr: false,
-});
+// Importación dinámica del editor para evitar problemas de SSR
+const ReactQuill = dynamic(() => 
+  Promise.resolve(
+    (props: any) => (
+      <div className="border border-gray-300 rounded-md overflow-hidden">
+        <textarea
+          value={props.value || ''}
+          onChange={(e) => props.onChange && props.onChange(e.target.value)}
+          className="w-full h-64 p-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          placeholder={props.placeholder || "Escribe el contenido aquí..."}
+        />
+        <div className="bg-gray-100 p-2 text-sm text-gray-600">
+          Editor de texto enriquecido (temporalmente desactivado)
+        </div>
+      </div>
+    )
+  ),
+  { ssr: false }
+);
 // Categorías predefinidas
 const CATEGORIES = [
   "Musculación",
