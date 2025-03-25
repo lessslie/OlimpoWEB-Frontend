@@ -157,7 +157,7 @@ const ScanQRPage = () => {
             <h3 className="font-medium text-gray-700 mb-2">Instrucciones:</h3>
             <ol className="list-decimal list-inside text-gray-600 space-y-1 text-sm">
               <li>Acércate al código QR ubicado en la entrada del gimnasio</li>
-              <li>Presiona el botón "Iniciar escaneo"</li>
+              <li>Presiona el botón Iniciar escaneo</li>
               <li>Apunta la cámara al código QR</li>
               <li>Espera a que se registre tu asistencia</li>
             </ol>

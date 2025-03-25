@@ -41,12 +41,9 @@ interface BlogPost {
   tags?: string[];
 }
 
-interface PageProps {
-  params: {
-    id: string;
-  };
+type PageProps = {
+  params: { id: string };
 }
-
 const EditBlogPostPage = ({ params }: PageProps) => {
   const { id } = params;
   const { user, isAdmin, loading } = useAuth();

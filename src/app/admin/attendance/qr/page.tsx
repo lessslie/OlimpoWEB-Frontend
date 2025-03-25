@@ -167,7 +167,7 @@ const QRCodePage = () => {
                 <h3 className="font-medium text-green-800 mb-2">Instrucciones para los usuarios</h3>
                 <ol className="list-decimal list-inside space-y-2">
                   <li>Abre la aplicación de Olimpo Gym en tu teléfono</li>
-                  <li>Toca el botón "Escanear QR" en la pantalla principal</li>
+                  <li>Toca el botón Escanear QR en la pantalla principal</li>
                   <li>Apunta la cámara hacia este código QR</li>
                   <li>¡Listo! Tu asistencia ha sido registrada</li>
                 </ol>
