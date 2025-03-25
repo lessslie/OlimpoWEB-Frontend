@@ -10,14 +10,30 @@ import { toast } from "react-hot-toast";
 import dynamic from "next/dynamic";
 
 // Importar el escáner QR dinámicamente para evitar problemas de SSR
-const QrScanner = dynamic(() => import("react-qr-scanner"), {
-  ssr: false,
-  loading: () => (
-    <div className="aspect-square flex items-center justify-center bg-gray-100 rounded-lg">
-      <p className="text-gray-500">Cargando escáner...</p>
-    </div>
-  ),
-});
+// Temporalmente usar un componente simulado en lugar de react-qr-scanner
+const QrScanner = dynamic(
+  () =>
+    Promise.resolve(
+      (props: {
+        onScan?: (data: { text: string }) => void;
+        onError?: (err: Error) => void;
+      }) => (
+        <div className="aspect-square bg-gray-100 rounded-lg flex flex-col items-center justify-center p-4">
+          <p className="text-gray-600 mb-4">Escáner QR (simulado)</p>
+          <button
+            onClick={() =>
+              props.onScan &&
+              props.onScan({ text: "https://example.com/simulated-qr-code" })
+            }
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+          >
+            Simular escaneo
+          </button>
+        </div>
+      )
+    ),
+  { ssr: false }
+);
 const QRScannerPage = () => {
   const { user, isAdmin, loading } = useAuth();
   const router = useRouter();

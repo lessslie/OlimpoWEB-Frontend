@@ -1,12 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "npm install @babel/runtime react-quill && npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://olimpoweb-backend.onrender.com/api/$1" },
     { "source": "/(.*)", "destination": "/" }
   ],
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://olimpoweb.onrender.com/api"
+    "NEXT_PUBLIC_API_URL": "https://olimpoweb-backend.onrender.com/api"
   }
 }
