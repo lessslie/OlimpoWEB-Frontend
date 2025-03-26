@@ -1,16 +1,18 @@
 // src/services/api.service.ts
-import axios from 'axios';
+import axios from "axios";
 
 // Obtener la URL base de la API del entorno o usar un valor por defecto CORRECTO
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://olimpoweb-backend.onrender.com/api';
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://olimpoweb-backend.onrender.com/api";
 
-console.log('URL base de la API configurada:', API_URL);
+console.log("URL base de la API configurada:", API_URL);
 
 // Crear una instancia de axios con configuración común
 const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -71,7 +73,7 @@ export const apiService = {
   // Métodos de autenticación
   login: async (email: string, password: string) => {
     try {
-      const response = await apiClient.post("/auth/login", { email, password });
+      const response = await apiClient.post("auth/login", { email, password });
 
       if (response.data && response.data.token) {
         localStorage.setItem("token", response.data.token);
@@ -82,19 +84,22 @@ export const apiService = {
     } catch (error) {
       return {
         success: false,
-        error: (error as any).response?.data?.message || "Error al iniciar sesión",
+        error:
+          (error as any).response?.data?.message || "Error al iniciar sesión",
       };
     }
   },
 
   register: async (userData: any) => {
     try {
-      const response = await apiClient.post("/auth/register", userData);
+      const response = await apiClient.post("auth/register", userData);
       return { success: true, data: response.data };
     } catch (error) {
       return {
         success: false,
-        error: (error as any).response?.data?.message || "Error al registrar usuario",
+        error:
+          (error as any).response?.data?.message ||
+          "Error al registrar usuario",
       };
     }
   },
@@ -107,12 +112,14 @@ export const apiService = {
 
   getCurrentUser: async () => {
     try {
-      const response = await apiClient.get("/auth/me");
+      const response = await apiClient.get("auth/me");
       return { success: true, data: response.data };
     } catch (error) {
       return {
         success: false,
-        error: (error as any).response?.data?.message || "Error al obtener datos del usuario",
+        error:
+          (error as any).response?.data?.message ||
+          "Error al obtener datos del usuario",
       };
     }
   },
