@@ -215,7 +215,9 @@ const ScanQRPage = () => {
   // Solicitar permiso de cámara
   const requestCameraPermission = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      console.log('Solicitando permisos de cámara...');
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    console.log('Permiso concedido, stream:', stream);
       // Detener el stream inmediatamente después de obtener permisos
       stream.getTracks().forEach((track) => track.stop());
       setCameraPermission("granted");
