@@ -79,17 +79,33 @@ function AsistenciaContent() {
     try {
       setRegistering(true);
 
-      // Llamar al endpoint de registro de asistencia
-      const attendanceResponse = await apiService.post("attendance/register", {
-        qrData: data,
-        userId: user.id,
-      });
+      // Crear un nuevo objeto de datos que incluya el user_id
+      const qrDataWithUser = {
+        ...data,
+        user_id: user.id,
+      };
+
+      // Codificar los datos para la URL
+      const encodedData = encodeURIComponent(JSON.stringify(qrDataWithUser));
+
+      // Determinar la URL base para la API
+      const apiBaseUrl =
+        typeof apiService.getBaseUrl === "function"
+          ? apiService.getBaseUrl()
+          : process.env.NEXT_PUBLIC_API_URL ||
+            "https://olimpoweb-backend.onrender.com/api";
+
+      // Usar el endpoint check-in existente que no requiere autenticación
+      const response = await fetch(
+        `${apiBaseUrl}/attendance/check-in?data=${encodedData}`
+      );
+      const attendanceResponse = await response.json();
 
       if (attendanceResponse.success) {
         setSuccess(true);
         toast.success("¡Asistencia registrada exitosamente!");
       } else {
-        setError(attendanceResponse.error || "Error al registrar asistencia");
+        setError(attendanceResponse.message || "Error al registrar asistencia");
       }
     } catch (error) {
       console.error("Error al registrar asistencia:", error);
