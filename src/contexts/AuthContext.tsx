@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { apiService } from '@/services/api.service';
+import axios from 'axios';
 
 // Definimos el tipo de perfil de usuario
 interface UserProfile {
@@ -126,7 +127,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(true);
       
       // Iniciar sesión usando el backend
-      const response = await apiService.post('auth/login', { email, password });
+      const backendUrl = 'https://olimpoweb-backend.onrender.com/api/auth/login';
+      console.log('Intentando login en URL completa:', backendUrl);
+      console.log('URL base de la API en AuthContext:', process.env.NEXT_PUBLIC_API_URL);
+    console.log('URL completa para login:', `${process.env.NEXT_PUBLIC_API_URL}/auth/login`);
+    
+      
+      // Usar axios directamente con la URL completa
+      const response = await axios.post(backendUrl, { email, password });
       
       if (!response.data || !response.data.token) {
         throw new Error('No se recibió un token válido');
