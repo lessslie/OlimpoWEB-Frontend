@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import BackgroundLogo from '@/components/BackgroundLogo';
-import { apiService } from '@/services/api.service';
 import { toast } from 'react-hot-toast';
+import { Suspense } from 'react';
 
 // Interfaces
 interface User {
@@ -33,7 +33,10 @@ const membershipTypes: MembershipType[] = [
   { name: 'Polideportivo', value: 'MULTISPORT', defaultPrice: 7000, requiresDaysPerWeek: false },
 ];
 
-const NewMembershipPage = () => {
+// Componente que usa useSearchParams
+import { useSearchParams } from 'next/navigation';
+
+function MembershipFormWithParams() {
   const { user, isAdmin, loading, token } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -337,6 +340,19 @@ const NewMembershipPage = () => {
         </form>
       </div>
     </div>
+  );
+}
+
+// Componente principal de la página - Envolvemos con Suspense
+const NewMembershipPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    }>
+      <MembershipFormWithParams />
+    </Suspense>
   );
 };
 

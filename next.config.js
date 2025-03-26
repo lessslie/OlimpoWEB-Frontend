@@ -9,7 +9,6 @@ const nextConfig = {
   transpilePackages: ['react-qr-scanner', 'react-quill'],
   experimental: {
     forceSwcTransforms: true,
-    esmExternals: 'loose'
   },
   webpack: (config) => {
     // Resolver problemas con alias para módulos problemáticos
