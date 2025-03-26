@@ -79,18 +79,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         setToken(storedToken);
         
-        // Obtener datos del usuario actual desde el backend
         try {
-          const response = await apiService.get('auth/me');
+          // Usar URL completa para el endpoint /auth/me
+          const response = await axios.get('https://olimpoweb-backend.onrender.com/api/auth/me', {
+            headers: {
+              Authorization: `Bearer ${storedToken}`
+            }
+          });
           
           if (response.data) {
-            console.log('Datos del usuario obtenidos desde el backend:', response.data);
+            console.log('Datos del usuario obtenidos:', response.data);
             setUser(response.data);
             setIsAdmin(response.data.is_admin || false);
             setIsAuthenticated(true);
           } else {
-            console.log('No se pudieron obtener los datos del usuario desde el backend');
-            // Si no se pueden obtener datos, limpiar el token
+            // Si no hay datos, limpiar sesión
             localStorage.removeItem('token');
             setUser(null);
             setIsAdmin(false);
@@ -98,25 +101,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setToken(null);
           }
         } catch (error) {
-          console.error('Error al obtener datos del usuario:', error);
-          // Si hay un error al obtener datos, limpiar el token
-          localStorage.removeItem('token');
-          setUser(null);
-          setIsAdmin(false);
-          setIsAuthenticated(false);
-          setToken(null);
+          console.error('Error al verificar sesión:', error);
+          // No cerrar sesión si es solo un error de red
+          if (axios.isAxiosError(error) && error.response && error.response.status === 401) {
+            console.log('Error de autenticación, cerrando sesión...');
+            // Solo si es error de autenticación
+            localStorage.removeItem('token');
+            setUser(null);
+            setIsAdmin(false);
+            setIsAuthenticated(false);
+            setToken(null);
+          }
         }
       }
     } catch (error) {
-      console.error('Error verificando usuario:', error);
-      // Si hay un error general, limpiar el estado
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-      }
-      setUser(null);
-      setIsAdmin(false);
-      setIsAuthenticated(false);
-      setToken(null);
+      console.error('Error general verificando usuario:', error);
     } finally {
       setLoading(false);
     }
