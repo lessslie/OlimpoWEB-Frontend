@@ -1,13 +1,13 @@
-import axios from 'axios';
+import axios from "axios";
 
 // Obtener la URL base de la API del entorno o usar un valor por defecto
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Crear una instancia de axios con configuración común
 const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -15,13 +15,14 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Obtener el token del almacenamiento local
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
     // Si hay un token, incluirlo en el encabezado de autorización
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     return config;
   },
   (error) => {
@@ -35,62 +36,100 @@ apiClient.interceptors.response.use(
   (error) => {
     // Manejar errores de autenticación (401)
     if (error.response && error.response.status === 401) {
-      // Si estamos en el navegador, redirigir a la página de inicio de sesión
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        // No redirigimos aquí para evitar problemas con Next.js
+      // Si estamos en el navegador, eliminar el token
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
         // La redirección se manejará en los componentes
       }
     }
-    
+
     return Promise.reject(error);
   }
 );
 
 // Exportar el servicio de API con métodos comunes
 export const apiService = {
-  // Método GET
+  // Métodos HTTP básicos
   get: (url: string, params?: any) => apiClient.get(url, { params }),
-  
-  // Método POST
   post: (url: string, data: any) => apiClient.post(url, data),
-  
-  // Método PUT
   put: (url: string, data: any) => apiClient.put(url, data),
-  
-  // Método PATCH
   patch: (url: string, data: any) => apiClient.patch(url, data),
-  
-  // Método DELETE
   delete: (url: string) => apiClient.delete(url),
-  
+
   // Método para subir archivos
   upload: (url: string, formData: FormData) => {
     return apiClient.post(url, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     });
   },
-  
-  // Método para establecer el token manualmente
+
+  // Métodos de autenticación
+  login: async (email: string, password: string) => {
+    try {
+      const response = await apiClient.post("/auth/login", { email, password });
+
+      if (response.data && response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        return { success: true, data: response.data };
+      }
+
+      return { success: false, error: "No se recibió un token válido" };
+    } catch (error) {
+      return {
+        success: false,
+        error: (error as any).response?.data?.message || "Error al iniciar sesión",
+      };
+    }
+  },
+
+  register: async (userData: any) => {
+    try {
+      const response = await apiClient.post("/auth/register", userData);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: (error as any).response?.data?.message || "Error al registrar usuario",
+      };
+    }
+  },
+
+  logout: () => {
+    localStorage.removeItem("token");
+    // Opcionalmente, también puedes hacer una llamada al backend para invalidar el token
+    // return apiClient.post('/auth/logout');
+  },
+
+  getCurrentUser: async () => {
+    try {
+      const response = await apiClient.get("/auth/me");
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: (error as any).response?.data?.message || "Error al obtener datos del usuario",
+      };
+    }
+  },
+
+  // Métodos auxiliares de token
   setAuthToken: (token: string) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('token', token);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("token", token);
     }
   },
-  
-  // Método para eliminar el token
+
   removeAuthToken: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
     }
   },
-  
-  // Método para obtener el token actual
+
   getAuthToken: () => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('token');
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("token");
     }
     return null;
   },
