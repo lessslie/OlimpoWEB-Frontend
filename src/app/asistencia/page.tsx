@@ -78,38 +78,25 @@ function AsistenciaContent() {
   const registerAttendance = async (token: string, data: any, user: any) => {
     try {
       setRegistering(true);
-
-      // Crear un nuevo objeto de datos que incluya el user_id
-      const qrDataWithUser = {
-        ...data,
+      
+      // Crear objeto con los datos necesarios
+      const payload = {
         user_id: user.id,
+        check_in_time: new Date().toISOString()
       };
-
-      // Codificar los datos para la URL
-      const encodedData = encodeURIComponent(JSON.stringify(qrDataWithUser));
-
-      // Determinar la URL base para la API
-      const apiBaseUrl =
-        typeof apiService.getBaseUrl === "function"
-          ? apiService.getBaseUrl()
-          : process.env.NEXT_PUBLIC_API_URL ||
-            "https://olimpoweb-backend.onrender.com/api";
-
-      // Usar el endpoint check-in existente que no requiere autenticación
-      const response = await fetch(
-        `${apiBaseUrl}/attendance/check-in?data=${encodedData}`
-      );
-      const attendanceResponse = await response.json();
-
-      if (attendanceResponse.success) {
+      
+      // Usar apiService para hacer la petición (que ya incluye el token automáticamente)
+      const response = await apiService.post('attendance', payload);
+      
+      if (response.data) {
         setSuccess(true);
-        toast.success("¡Asistencia registrada exitosamente!");
+        toast.success('¡Asistencia registrada exitosamente!');
       } else {
-        setError(attendanceResponse.message || "Error al registrar asistencia");
+        setError('Error al registrar asistencia');
       }
     } catch (error) {
-      console.error("Error al registrar asistencia:", error);
-      setError("No se pudo registrar la asistencia. Intente nuevamente.");
+      console.error('Error al registrar asistencia:', error);
+      setError('No se pudo registrar la asistencia. Intente nuevamente.');
     } finally {
       setRegistering(false);
       setLoading(false);
