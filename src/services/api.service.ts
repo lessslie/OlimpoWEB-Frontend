@@ -1,13 +1,14 @@
-import axios from "axios";
+// src/services/api.service.ts
+import axios from 'axios';
 
-// Obtener la URL base de la API del entorno o usar un valor por defecto
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+// Obtener la URL base de la API del entorno
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Crear una instancia de axios con configuración común
 const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 

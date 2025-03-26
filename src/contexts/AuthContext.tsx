@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         // Obtener datos del usuario actual desde el backend
         try {
-          const response = await apiService.get('/auth/me');
+          const response = await apiService.get('auth/me');
           
           if (response.data) {
             console.log('Datos del usuario obtenidos desde el backend:', response.data);
@@ -126,7 +126,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(true);
       
       // Iniciar sesión usando el backend
-      const response = await apiService.post('/auth/login', { email, password });
+      const response = await apiService.post('auth/login', { email, password });
       
       if (!response.data || !response.data.token) {
         throw new Error('No se recibió un token válido');
