@@ -1,43 +1,46 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { apiService } from '@/services/api.service';
-import { toast } from 'react-hot-toast';
-import Image from 'next/image';
-import Link from 'next/link';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { apiService } from "@/services/api.service";
+import { toast } from "react-hot-toast";
+import Link from "next/link";
+import { Suspense } from "react";
 
-export default function AsistenciaPage() {
+// Componente que usa useSearchParams (debe estar envuelto en Suspense)
+import { useSearchParams } from "next/navigation";
+
+function AsistenciaContent() {
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [qrData, setQrData] = useState<any>(null);
   const [userData, setUserData] = useState<any>(null);
   const [rememberMe, setRememberMe] = useState(true);
 
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   // Procesar datos del QR al cargar la página
   useEffect(() => {
-    const dataParam = searchParams.get('data');
-    
+    const dataParam = searchParams.get("data");
+
     if (!dataParam) {
-      setError('No se encontraron datos válidos en el código QR');
+      setError("No se encontraron datos válidos en el código QR");
       setLoading(false);
       return;
     }
-    
+
     try {
       // Si los datos vienen como string codificado JSON
       const parsedData = JSON.parse(decodeURIComponent(dataParam));
       setQrData(parsedData);
-      
+
       // Verificar si el usuario ya está autenticado
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (token) {
         checkAuthAndRegisterAttendance(token, parsedData);
       } else {
@@ -45,8 +48,8 @@ export default function AsistenciaPage() {
         setLoading(false);
       }
     } catch (e) {
-      console.error('Error al procesar datos del QR:', e);
-      setError('El código QR no contiene datos válidos');
+      console.error("Error al procesar datos del QR:", e);
+      setError("El código QR no contiene datos válidos");
       setLoading(false);
     }
   }, [searchParams]);
@@ -55,18 +58,18 @@ export default function AsistenciaPage() {
   const checkAuthAndRegisterAttendance = async (token: string, data: any) => {
     try {
       // Verificar token con el backend
-      const userResponse = await apiService.get('auth/me');
+      const userResponse = await apiService.get("auth/me");
       if (userResponse.success && userResponse.data.user) {
         setUserData(userResponse.data.user);
         registerAttendance(token, data, userResponse.data.user);
       } else {
         // Token inválido, limpiar y mostrar login
-        localStorage.removeItem('token');
+        localStorage.removeItem("token");
         setLoading(false);
       }
     } catch (error) {
-      console.error('Error al verificar autenticación:', error);
-      localStorage.removeItem('token');
+      console.error("Error al verificar autenticación:", error);
+      localStorage.removeItem("token");
       setLoading(false);
     }
   };
@@ -75,22 +78,22 @@ export default function AsistenciaPage() {
   const registerAttendance = async (token: string, data: any, user: any) => {
     try {
       setRegistering(true);
-      
+
       // Llamar al endpoint de registro de asistencia
-      const attendanceResponse = await apiService.post('attendance/register', {
+      const attendanceResponse = await apiService.post("attendance/register", {
         qrData: data,
-        userId: user.id
+        userId: user.id,
       });
-      
+
       if (attendanceResponse.success) {
         setSuccess(true);
-        toast.success('¡Asistencia registrada exitosamente!');
+        toast.success("¡Asistencia registrada exitosamente!");
       } else {
-        setError(attendanceResponse.error || 'Error al registrar asistencia');
+        setError(attendanceResponse.error || "Error al registrar asistencia");
       }
     } catch (error) {
-      console.error('Error al registrar asistencia:', error);
-      setError('No se pudo registrar la asistencia. Intente nuevamente.');
+      console.error("Error al registrar asistencia:", error);
+      setError("No se pudo registrar la asistencia. Intente nuevamente.");
     } finally {
       setRegistering(false);
       setLoading(false);
@@ -100,40 +103,41 @@ export default function AsistenciaPage() {
   // Manejar inicio de sesión
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
-      toast.error('Por favor complete todos los campos');
+      toast.error("Por favor complete todos los campos");
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       const loginResponse = await apiService.login(email, password);
-      
+
       if (loginResponse.success) {
         // Si el usuario eligió recordar sesión
         if (rememberMe) {
-            localStorage.setItem('token', loginResponse.data.token);
-          } else {
-            sessionStorage.setItem('token', loginResponse.data.token);
-          }
-        
+          localStorage.setItem("token", loginResponse.data.token);
+        } else {
+          // Almacenar solo para esta sesión (se borrará al cerrar el navegador)
+          sessionStorage.setItem("token", loginResponse.data.token);
+        }
+
         // Registrar asistencia con el nuevo token
         registerAttendance(
-          loginResponse.data.token.access_token, 
-          qrData, 
+          loginResponse.data.token,
+          qrData,
           loginResponse.data.user
         );
-        
+
         setUserData(loginResponse.data.user);
       } else {
-        setError('Credenciales inválidas');
+        setError("Credenciales inválidas");
         setLoading(false);
       }
     } catch (error) {
-      console.error('Error de inicio de sesión:', error);
-      setError('Error al iniciar sesión');
+      console.error("Error de inicio de sesión:", error);
+      setError("Error al iniciar sesión");
       setLoading(false);
     }
   };
@@ -145,33 +149,49 @@ export default function AsistenciaPage() {
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           <div className="mb-6 flex justify-center">
             <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-16 w-16 text-green-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
           </div>
-          
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">¡Asistencia Registrada!</h2>
-          
+
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            ¡Asistencia Registrada!
+          </h2>
+
           <p className="text-lg text-gray-600 mb-2">
-            Bienvenido/a, <span className="font-semibold">{userData.first_name} {userData.last_name}</span>
+            Bienvenido/a,{" "}
+            <span className="font-semibold">
+              {userData.first_name} {userData.last_name}
+            </span>
           </p>
-          
+
           <p className="text-gray-500 mb-6">
             Tu asistencia ha sido registrada exitosamente.
             <br />
-            {new Date().toLocaleString('es-ES')}
+            {new Date().toLocaleString("es-ES")}
           </p>
-          
+
           <div className="mb-6">
             <div className="p-4 bg-blue-50 rounded-lg text-blue-800 text-sm">
               <p>¡Disfruta tu entrenamiento en Olimpo Gym!</p>
             </div>
           </div>
-          
+
           <div className="mt-6">
-            <Link 
-              href="/dashboard" 
+            <Link
+              href="/dashboard"
               className="block w-full bg-indigo-600 text-white py-3 px-4 rounded-md text-center font-medium hover:bg-indigo-700 transition duration-200"
             >
               Ir al Dashboard
@@ -190,7 +210,7 @@ export default function AsistenciaPage() {
           <h1 className="text-2xl font-bold">Olimpo Gym</h1>
           <p className="text-indigo-100">Registro de Asistencia</p>
         </div>
-        
+
         <div className="p-6">
           {loading ? (
             <div className="text-center py-8">
@@ -212,12 +232,15 @@ export default function AsistenciaPage() {
           ) : (
             <>
               <div className="mb-6 text-center">
-                <h2 className="text-xl font-bold text-gray-800 mb-2">Iniciar Sesión</h2>
+                <h2 className="text-xl font-bold text-gray-800 mb-2">
+                  Iniciar Sesión
+                </h2>
                 <p className="text-gray-600 text-sm">
-                  Para registrar tu asistencia, inicia sesión con tu cuenta de Olimpo Gym
+                  Para registrar tu asistencia, inicia sesión con tu cuenta de
+                  Olimpo Gym
                 </p>
               </div>
-              
+
               {registering ? (
                 <div className="text-center py-6">
                   <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mb-4"></div>
@@ -226,7 +249,10 @@ export default function AsistenciaPage() {
               ) : (
                 <form onSubmit={handleLogin}>
                   <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="email">
+                    <label
+                      className="block text-gray-700 text-sm font-medium mb-1"
+                      htmlFor="email"
+                    >
                       Email
                     </label>
                     <input
@@ -238,9 +264,12 @@ export default function AsistenciaPage() {
                       required
                     />
                   </div>
-                  
+
                   <div className="mb-6">
-                    <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="password">
+                    <label
+                      className="block text-gray-700 text-sm font-medium mb-1"
+                      htmlFor="password"
+                    >
                       Contraseña
                     </label>
                     <input
@@ -252,7 +281,7 @@ export default function AsistenciaPage() {
                       required
                     />
                   </div>
-                  
+
                   <div className="mb-6">
                     <label className="flex items-center">
                       <input
@@ -266,7 +295,7 @@ export default function AsistenciaPage() {
                       </span>
                     </label>
                   </div>
-                  
+
                   <button
                     type="submit"
                     className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200"
@@ -275,11 +304,14 @@ export default function AsistenciaPage() {
                   </button>
                 </form>
               )}
-              
+
               <div className="mt-6 text-center text-sm">
                 <p className="text-gray-600">
-                  ¿No tienes una cuenta?{' '}
-                  <Link href="/register" className="text-indigo-600 hover:text-indigo-500">
+                  ¿No tienes una cuenta?{" "}
+                  <Link
+                    href="/register"
+                    className="text-indigo-600 hover:text-indigo-500"
+                  >
                     Regístrate
                   </Link>
                 </p>
@@ -290,4 +322,22 @@ export default function AsistenciaPage() {
       </div>
     </div>
   );
-}apiService.login
+}
+
+// Componente principal con Suspense
+export default function AsistenciaPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mb-4"></div>
+            <p className="text-gray-600">Cargando...</p>
+          </div>
+        </div>
+      }
+    >
+      <AsistenciaContent />
+    </Suspense>
+  );
+}
