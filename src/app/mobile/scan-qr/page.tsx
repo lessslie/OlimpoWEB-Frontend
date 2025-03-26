@@ -5,17 +5,20 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import BackgroundLogo from "@/components/BackgroundLogo";
 import toast from "react-hot-toast";
+import jsQR from "jsqr";
 
 const ScanQRPage = () => {
   const { user, loading } = useAuth();
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<null | {
     success: boolean;
     message: string;
   }>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const scanIntervalRef = useRef<number | null>(null);
 
   // Verificar si el usuario está autenticado
   useEffect(() => {
@@ -28,6 +31,9 @@ const ScanQRPage = () => {
       if (isScanning) {
         stopCamera();
       }
+      if (scanIntervalRef.current) {
+        clearInterval(scanIntervalRef.current);
+      }
     };
   }, [user, loading, router]);
 
@@ -37,6 +43,12 @@ const ScanQRPage = () => {
       tracks.forEach((track) => track.stop());
       videoRef.current.srcObject = null;
     }
+
+    if (scanIntervalRef.current) {
+      clearInterval(scanIntervalRef.current);
+      scanIntervalRef.current = null;
+    }
+
     setIsScanning(false);
   };
 
@@ -58,6 +70,9 @@ const ScanQRPage = () => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
+
+        // Comenzar a escanear QR
+        startQRScanner();
       }
     } catch (error) {
       console.error("Error al iniciar la cámara:", error);
@@ -69,16 +84,130 @@ const ScanQRPage = () => {
     }
   };
 
-  // Esta función simula el éxito de escaneo - después la cambiaremos por detección real
-  const simulateSuccessfulScan = () => {
-    if (!user) return;
+  const startQRScanner = () => {
+    // Crear un canvas para procesar el video
+    if (!canvasRef.current || !videoRef.current) return;
 
-    stopCamera();
-    setScanResult({
-      success: true,
-      message: "Asistencia registrada correctamente",
-    });
-    toast.success("¡Asistencia registrada correctamente!");
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+
+    if (!context) return;
+
+    // Configurar intervalo para escanear QR periódicamente
+    scanIntervalRef.current = window.setInterval(() => {
+      if (!video.videoWidth) return;
+
+      // Configurar el tamaño del canvas para que coincida con el video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Dibujar el frame actual del video en el canvas
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Obtener los datos de la imagen para procesarlos
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+      // Intentar encontrar un código QR en la imagen
+      try {
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });
+
+        if (code) {
+          console.log("QR detectado:", code.data);
+          stopCamera();
+          processQRCode(code.data);
+        }
+      } catch (error) {
+        console.error("Error al procesar el frame:", error);
+      }
+    }, 200); // Escanear cada 200ms
+  };
+
+  const processQRCode = async (qrData: string) => {
+    try {
+      console.log("Procesando QR:", qrData);
+
+      // Determinar si el QR es una URL o datos JSON
+      let parsedData;
+
+      if (qrData.includes("?data=")) {
+        // Si es una URL con parámetro de datos
+        const urlParams = new URLSearchParams(qrData.split("?")[1]);
+        const dataParam = urlParams.get("data");
+
+        if (!dataParam) {
+          throw new Error("QR inválido: no contiene datos");
+        }
+
+        try {
+          parsedData = JSON.parse(decodeURIComponent(dataParam));
+        } catch (e) {
+          throw new Error("QR inválido: formato incorrecto");
+        }
+      } else {
+        // Intentar parsear directamente como JSON
+        try {
+          parsedData = JSON.parse(qrData);
+        } catch (e) {
+          // Si no es JSON, usar como string
+          parsedData = { raw: qrData };
+        }
+      }
+
+      console.log("Datos del QR:", parsedData);
+
+      // Verificar que sea un QR de asistencia válido
+      if (!parsedData.type || parsedData.type !== "gym_attendance") {
+        throw new Error("Este QR no es válido para registrar asistencia");
+      }
+
+      // Añadir el ID del usuario
+      parsedData.user_id = user?.id;
+
+      // Registrar asistencia
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_URL ||
+        "https://olimpoweb-backend.onrender.com/api";
+      const token = localStorage.getItem("token");
+
+      // Llamar al endpoint check-in
+      const response = await fetch(
+        `${apiBaseUrl}/attendance/check-in?data=${encodeURIComponent(
+          JSON.stringify(parsedData)
+        )}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Procesar respuesta
+      if (!response.ok) {
+        throw new Error(`Error del servidor: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        setScanResult({
+          success: true,
+          message: "Asistencia registrada correctamente",
+        });
+        toast.success("¡Asistencia registrada exitosamente!");
+      } else {
+        throw new Error(result.message || "Error al registrar asistencia");
+      }
+    } catch (error) {
+      console.error("Error al procesar QR:", error);
+      setScanResult({
+        success: false,
+        message: error.message || "Error al procesar el código QR",
+      });
+      toast.error(error.message || "Error al procesar el código QR");
+    }
   };
 
   if (loading) {
@@ -116,6 +245,11 @@ const ScanQRPage = () => {
                     playsInline
                     autoPlay
                     muted
+                  />
+                  <canvas
+                    ref={canvasRef}
+                    className="absolute opacity-0"
+                    style={{ position: "absolute", top: "-9999px" }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                     <div className="w-48 h-48 border-2 border-blue-500 animate-pulse"></div>
@@ -219,29 +353,20 @@ const ScanQRPage = () => {
               )}
             </div>
 
-            {isScanning ? (
-              <div className="flex space-x-4">
-                <button
-                  onClick={stopCamera}
-                  className="flex-1 py-3 px-4 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700"
-                >
-                  Detener
-                </button>
-                <button
-                  onClick={simulateSuccessfulScan}
-                  className="flex-1 py-3 px-4 rounded-lg font-medium text-white bg-green-600 hover:bg-green-700"
-                >
-                  Simular Escaneo
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={startCamera}
-                className="w-full py-3 px-4 rounded-lg font-medium text-white bg-blue-600 hover:bg-blue-700"
-              >
-                {scanResult ? "Escanear de nuevo" : "Iniciar escaneo"}
-              </button>
-            )}
+            <button
+              onClick={isScanning ? stopCamera : startCamera}
+              className={`w-full py-3 px-4 rounded-lg font-medium text-white ${
+                isScanning
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              {isScanning
+                ? "Detener escaneo"
+                : scanResult
+                ? "Escanear de nuevo"
+                : "Iniciar escaneo"}
+            </button>
           </div>
 
           <div className="border-t border-gray-200 pt-4">
@@ -250,7 +375,7 @@ const ScanQRPage = () => {
               <li>Acércate al código QR ubicado en la entrada del gimnasio</li>
               <li>Presiona el botón Iniciar escaneo</li>
               <li>Apunta la cámara al código QR</li>
-              <li>Presiona Simular Escaneo para registrar tu asistencia</li>
+              <li>Espera a que se detecte automáticamente el código</li>
             </ol>
           </div>
 
