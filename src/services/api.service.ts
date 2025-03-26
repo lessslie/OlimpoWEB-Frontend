@@ -115,17 +115,19 @@ export const apiService = {
       const response = await apiClient.get("auth/me");
       return { success: true, data: response.data };
     } catch (error) {
+      console.log("Error al obtener datos del usuario:", error);
       return {
         success: false,
         error:
           (error as any).response?.data?.message ||
           "Error al obtener datos del usuario",
-      };
-    }
-  },
+        };
+      }
+    },
 
   // Métodos auxiliares de token
   setAuthToken: (token: string) => {
+    console.log("Guardando token de autenticación:", token);
     if (typeof window !== "undefined") {
       localStorage.setItem("token", token);
     }
@@ -133,11 +135,13 @@ export const apiService = {
 
   removeAuthToken: () => {
     if (typeof window !== "undefined") {
+      console.log("Eliminando token de autenticación");
       localStorage.removeItem("token");
     }
   },
 
   getAuthToken: () => {
+    console.log("Obteniendo token de autenticación");
     if (typeof window !== "undefined") {
       return localStorage.getItem("token");
     }
