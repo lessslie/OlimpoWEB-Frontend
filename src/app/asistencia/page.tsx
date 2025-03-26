@@ -61,7 +61,7 @@ function AsistenciaContent() {
       const userResponse = await apiService.get("auth/me");
       if (userResponse.success && userResponse.data.user) {
         setUserData(userResponse.data.user);
-        registerAttendance(token, data, userResponse.data.user);
+        registerAttendance(data, userResponse.data.user);
       } else {
         // Token inválido, limpiar y mostrar login
         localStorage.removeItem("token");
@@ -74,29 +74,59 @@ function AsistenciaContent() {
     }
   };
 
-  // Función para registrar la asistencia
-  const registerAttendance = async (token: string, data: any, user: any) => {
+  // Función para registrar la asistencia usando el endpoint check-in
+  const registerAttendance = async (data: any, user: any) => {
     try {
       setRegistering(true);
-      
-      // Crear objeto con los datos necesarios
-      const payload = {
+
+      // Crear un nuevo objeto de datos que incluya el user_id
+      const qrDataWithUser = {
+        ...data,
         user_id: user.id,
-        check_in_time: new Date().toISOString()
       };
-      
-      // Usar apiService para hacer la petición (que ya incluye el token automáticamente)
-      const response = await apiService.post('attendance', payload);
-      
-      if (response.data) {
+
+      // Codificar los datos para la URL
+      const encodedData = encodeURIComponent(JSON.stringify(qrDataWithUser));
+
+      // Determinar la URL base
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_URL ||
+        "https://olimpoweb-backend.onrender.com/api";
+
+      console.log("Registrando asistencia con datos:", qrDataWithUser);
+      console.log(
+        "URL completa:",
+        `${apiBaseUrl}/attendance/check-in?data=${encodedData}`
+      );
+
+      // Usar fetch directamente para evitar problemas con los interceptores de axios
+      const response = await fetch(
+        `${apiBaseUrl}/attendance/check-in?data=${encodedData}`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Error de servidor: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const attendanceResponse = await response.json();
+
+      if (attendanceResponse && attendanceResponse.success) {
         setSuccess(true);
-        toast.success('¡Asistencia registrada exitosamente!');
+        toast.success("¡Asistencia registrada exitosamente!");
       } else {
-        setError('Error al registrar asistencia');
+        const errorMsg =
+          attendanceResponse?.message || "Error al registrar asistencia";
+        console.error("Error en respuesta:", errorMsg);
+        setError(errorMsg);
       }
     } catch (error) {
-      console.error('Error al registrar asistencia:', error);
-      setError('No se pudo registrar la asistencia. Intente nuevamente.');
+      console.error("Error al registrar asistencia:", error);
+      setError(
+        "No se pudo registrar la asistencia. Intente nuevamente. " +
+          error.message
+      );
     } finally {
       setRegistering(false);
       setLoading(false);
@@ -126,14 +156,11 @@ function AsistenciaContent() {
           sessionStorage.setItem("token", loginResponse.data.token);
         }
 
-        // Registrar asistencia con el nuevo token
-        registerAttendance(
-          loginResponse.data.token,
-          qrData,
-          loginResponse.data.user
-        );
-
+        // Obtener los datos del usuario desde la respuesta
         setUserData(loginResponse.data.user);
+
+        // Registrar asistencia con los datos del usuario
+        registerAttendance(qrData, loginResponse.data.user);
       } else {
         setError("Credenciales inválidas");
         setLoading(false);
