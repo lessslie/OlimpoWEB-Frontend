@@ -2,7 +2,10 @@
 import axios from 'axios';
 
 // Obtener la URL base de la API del entorno
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://olimpoweb-backend.onrender.com/api';
+
+
+console.log('URL de la API configurada:', API_URL); // Para depuración
 
 // Crear una instancia de axios con configuración común
 const apiClient = axios.create({
