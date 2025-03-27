@@ -105,14 +105,20 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
   const fetchUserData = async () => {
     setIsLoading(true);
     try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/${params.id}`,
+        `${baseUrl}/users/${params.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener los datos del usuario');
+      }
+      
       const data = await response.json();
 
       // Actualiza el estado con los datos recibidos
@@ -131,14 +137,20 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
   // Función para obtener membresías del usuario
   const fetchMemberships = async () => {
     try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/memberships/user/${params.id}`,
+        `${baseUrl}/memberships/user/${params.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener las membresías del usuario');
+      }
+      
       const data = await response.json();
 
       // Actualiza el estado con los datos recibidos
@@ -151,14 +163,20 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
   // Función para obtener asistencias del usuario
   const fetchAttendances = async () => {
     try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/attendance/user/${params.id}`,
+        `${baseUrl}/attendance/user/${params.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener las asistencias del usuario');
+      }
+      
       const data = await response.json();
 
       // Ordenar las asistencias por fecha (más recientes primero)
@@ -182,8 +200,9 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
 
     setIsLoading(true);
     try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/${params.id}`,
+        `${baseUrl}/users/${params.id}`,
         {
           method: "PATCH",
           headers: {
@@ -193,6 +212,11 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
           body: JSON.stringify(editedUser),
         }
       );
+      
+      if (!response.ok) {
+        throw new Error('Error al actualizar el perfil');
+      }
+      
       const updatedUser = await response.json();
 
       // Actualiza el estado con los datos del usuario actualizado
@@ -259,8 +283,9 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
 
     setIsLoading(true);
     try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/${params.id}/routine`,
+        `${baseUrl}/users/${params.id}/routine`,
         {
           method: "POST",
           headers: {
@@ -273,6 +298,11 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
           }),
         }
       );
+      
+      if (!response.ok) {
+        throw new Error('Error al asignar la rutina');
+      }
+      
       const data = await response.json();
 
       // Actualiza el estado con los datos actualizados
@@ -298,8 +328,9 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
 
     setIsLoading(true);
     try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/${params.id}/routine`,
+        `${baseUrl}/users/${params.id}/routine`,
         {
           method: "DELETE",
           headers: {
@@ -307,6 +338,10 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
           },
         }
       );
+      
+      if (!response.ok) {
+        throw new Error('Error al eliminar la rutina');
+      }
 
       // Actualiza el estado después de eliminar la rutina
       setUserData({
@@ -967,9 +1002,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
 
             {hasRoutine ? (
               <div className="bg-gray-50 p-6 rounded-lg">
-                <h4 className="text-md font-medium text-gray-900 mb-4">
-                  Rutina actual:
-                </h4>
+                <h4 className="text-md font-medium">Rutina actual:</h4>
                 <div className="bg-white p-4 rounded border border-gray-200 whitespace-pre-wrap">
                   {JSON.stringify(userData?.routine, null, 2) ||
                     "No hay información disponible."}
