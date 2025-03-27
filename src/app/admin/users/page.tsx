@@ -436,7 +436,10 @@ const UsersPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-3">
                         <button
-                          onClick={() => router.push(`/admin/users/${user.id}`)}
+                          onClick={() => {
+                            console.log(`Navegando a detalle de usuario: /admin/users/${user.id}`);
+                            router.push(`/admin/users/${user.id}`);
+                          }}
                           className="text-indigo-600 hover:text-indigo-900"
                         >
                           Ver detalle

@@ -83,29 +83,46 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
 
   // Verificar si el usuario está autenticado y es administrador
   useEffect(() => {
+    console.log("Verificando autenticación - loading:", loading, "user:", !!user, "isAdmin:", isAdmin);
     if (!loading) {
       if (!user) {
+        console.log("No hay usuario autenticado, redirigiendo a /login");
         router.push("/login");
-      } else if (!isAdmin) {
+        return;
+      } 
+      
+      if (!isAdmin) {
+        console.log("Usuario no es admin, redirigiendo a /dashboard");
         router.push("/dashboard");
+        return;
+      }
+      
+      console.log("Usuario autenticado y es admin, puede ver la página");
+      
+      // Si el usuario está autenticado y es admin, cargamos los datos
+      if (params.id) {
+        console.log("Iniciando carga de datos del usuario con ID:", params.id);
+        fetchUserData();
+        fetchMemberships();
+        fetchAttendances();
+      } else {
+        console.error("No se proporcionó ID de usuario en los parámetros");
+        router.push("/admin/users");
       }
     }
-  }, [user, isAdmin, loading, router]);
-
-  // Cargar datos del usuario
-  useEffect(() => {
-    if (user && isAdmin) {
-      fetchUserData();
-      fetchMemberships();
-      fetchAttendances();
-    }
-  }, [user, isAdmin, params.id]);
+  }, [user, isAdmin, loading, params.id, token, router]);
 
   // Función para obtener datos del usuario
   const fetchUserData = async () => {
+    if (!token || !params.id) {
+      console.error("No hay token o ID de usuario para obtener datos");
+      return;
+    }
+    
     setIsLoading(true);
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
+      console.log("Obteniendo datos del usuario:", `${baseUrl}/users/${params.id}`);
       const response = await fetch(
         `${baseUrl}/users/${params.id}`,
         {
@@ -116,10 +133,19 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       );
       
       if (!response.ok) {
-        throw new Error('Error al obtener los datos del usuario');
+        console.error("Error en la respuesta:", response.status, response.statusText);
+        throw new Error(`Error al obtener los datos del usuario: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log("Datos del usuario recibidos:", data);
+
+      if (!data || !data.id) {
+        console.error("Datos de usuario inválidos o vacíos:", data);
+        toast.error("No se pudieron cargar los datos del usuario");
+        setIsLoading(false);
+        return;
+      }
 
       // Actualiza el estado con los datos recibidos
       setUserData(data);
@@ -136,8 +162,14 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
 
   // Función para obtener membresías del usuario
   const fetchMemberships = async () => {
+    if (!token || !params.id) {
+      console.error("No hay token o ID de usuario para obtener membresías");
+      return;
+    }
+    
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
+      console.log("Obteniendo membresías del usuario:", `${baseUrl}/memberships/user/${params.id}`);
       const response = await fetch(
         `${baseUrl}/memberships/user/${params.id}`,
         {
@@ -148,10 +180,12 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       );
       
       if (!response.ok) {
+        console.error("Error en la respuesta de membresías:", response.status, response.statusText);
         throw new Error('Error al obtener las membresías del usuario');
       }
       
       const data = await response.json();
+      console.log("Membresías recibidas:", data);
 
       // Actualiza el estado con los datos recibidos
       setMemberships(data);
@@ -160,10 +194,17 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       toast.error("Error al cargar las membresías");
     }
   };
+  
   // Función para obtener asistencias del usuario
   const fetchAttendances = async () => {
+    if (!token || !params.id) {
+      console.error("No hay token o ID de usuario para obtener asistencias");
+      return;
+    }
+    
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
+      console.log("Obteniendo asistencias del usuario:", `${baseUrl}/attendance/user/${params.id}`);
       const response = await fetch(
         `${baseUrl}/attendance/user/${params.id}`,
         {
@@ -174,10 +215,12 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       );
       
       if (!response.ok) {
+        console.error("Error en la respuesta de asistencias:", response.status, response.statusText);
         throw new Error('Error al obtener las asistencias del usuario');
       }
       
       const data = await response.json();
+      console.log("Asistencias recibidas:", data);
 
       // Ordenar las asistencias por fecha (más recientes primero)
       const sortedAttendances = data.sort(
@@ -459,26 +502,41 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
     toast.success(`Ejercicio duplicado para el día ${targetDay}`);
   };
 
-  if (loading || isLoading) {
+  // Renderizado condicional basado en el estado
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+        <span className="ml-3">Verificando autenticación...</span>
       </div>
     );
   }
   
   if (!user || !isAdmin) {
+    // Si no hay usuario o no es admin, no renderizamos nada
+    // La redirección ya se maneja en el useEffect
     return null;
   }
   
-  // Si no hay userData, también muestra un spinner, pero no retorna null
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+        <span className="ml-3">Cargando datos del usuario...</span>
+      </div>
+    );
+  }
+  
+  // Si no hay userData, también muestra un spinner
   if (!userData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+        <span className="ml-3">Cargando perfil...</span>
       </div>
     );
   }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <BackgroundLogo opacity={0.05} />
