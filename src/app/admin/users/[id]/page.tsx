@@ -105,36 +105,22 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
   const fetchUserData = async () => {
     setIsLoading(true);
     try {
-      // En un entorno real, esto sería una llamada a la API
-      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${params.id}`, {
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`
-      //   }
-      // });
-      // const data = await response.json();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/${params.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
 
-      // Simulamos datos para la demostración
-      const mockUser: User = {
-        id: params.id,
-        email: "usuario@ejemplo.com",
-        first_name: "Juan",
-        last_name: "Pérez",
-        phone: "1123456789",
-        is_admin: false,
-        role: "user",
-        created_at: "2023-01-15T10:30:00Z",
-        has_routine: false,
-        routine: null,
-      };
-
-      // Simular un retraso en la carga
-      setTimeout(() => {
-        setUserData(mockUser);
-        setEditedUser(mockUser);
-        setHasRoutine(mockUser.has_routine || false);
-        setRoutineText(mockUser.routine || "");
-        setIsLoading(false);
-      }, 500);
+      // Actualiza el estado con los datos recibidos
+      setUserData(data);
+      setEditedUser(data);
+      setHasRoutine(data.has_routine || false);
+      setRoutineText(data.routine || "");
+      setIsLoading(false);
     } catch (error) {
       console.error("Error al cargar los datos del usuario:", error);
       toast.error("Error al cargar los datos del usuario");
@@ -145,203 +131,45 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
   // Función para obtener membresías del usuario
   const fetchMemberships = async () => {
     try {
-      // En un entorno real, esto sería una llamada a la API
-      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/memberships/user/${params.id}`, {
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`
-      //   }
-      // });
-      // const data = await response.json();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/memberships/user/${params.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
 
-      // Simulamos datos para la demostración
-      const mockMemberships: Membership[] = [
-        {
-          id: "1",
-          type: "Mensual completo",
-          start_date: "2023-03-01T00:00:00Z",
-          end_date: "2023-04-01T00:00:00Z",
-          status: "expired",
-          price: 5000,
-        },
-        {
-          id: "2",
-          type: "Mensual completo",
-          start_date: "2023-04-01T00:00:00Z",
-          end_date: "2023-05-01T00:00:00Z",
-          status: "expired",
-          price: 5000,
-        },
-        {
-          id: "3",
-          type: "Kickboxing (2 días)",
-          start_date: "2023-05-01T00:00:00Z",
-          end_date: "2023-06-01T00:00:00Z",
-          status: "active",
-          price: 4000,
-        },
-      ];
-
-      // Simular un retraso en la carga
-      setTimeout(() => {
-        setMemberships(mockMemberships);
-      }, 700);
+      // Actualiza el estado con los datos recibidos
+      setMemberships(data);
     } catch (error) {
       console.error("Error al cargar las membresías:", error);
       toast.error("Error al cargar las membresías");
     }
   };
-
   // Función para obtener asistencias del usuario
   const fetchAttendances = async () => {
     try {
-      // En un entorno real, esto sería una llamada a la API
-      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/attendance/user/${params.id}`, {
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`
-      //   }
-      // });
-      // const data = await response.json();
-
-      // Simulamos datos para la demostración
-      const mockAttendances: Attendance[] = [
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/attendance/user/${params.id}`,
         {
-          id: "1",
-          check_in_time: "2023-05-02T10:15:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "2",
-          check_in_time: "2023-05-04T16:30:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "3",
-          check_in_time: "2023-05-09T11:45:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "4",
-          check_in_time: "2023-05-11T18:20:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "5",
-          check_in_time: "2023-05-16T09:10:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "6",
-          check_in_time: "2023-05-18T14:25:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "7",
-          check_in_time: "2023-05-23T08:40:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "8",
-          check_in_time: "2023-05-25T17:15:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "9",
-          check_in_time: "2023-05-30T12:50:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "10",
-          check_in_time: "2023-06-01T10:30:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "11",
-          check_in_time: "2023-06-06T15:45:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "12",
-          check_in_time: "2023-06-08T09:20:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "13",
-          check_in_time: "2023-06-13T16:10:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "14",
-          check_in_time: "2023-06-15T11:30:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "15",
-          check_in_time: "2023-06-20T14:15:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "16",
-          check_in_time: "2023-06-22T08:50:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "17",
-          check_in_time: "2023-06-27T17:30:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "18",
-          check_in_time: "2023-06-29T13:45:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "19",
-          check_in_time: "2023-07-04T10:20:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "20",
-          check_in_time: "2023-07-06T15:10:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "21",
-          check_in_time: "2023-07-11T09:40:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "22",
-          check_in_time: "2023-07-13T16:25:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "23",
-          check_in_time: "2023-07-18T11:15:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "24",
-          check_in_time: "2023-07-20T14:50:00Z",
-          membership_id: "3",
-        },
-        {
-          id: "25",
-          check_in_time: "2023-07-25T08:30:00Z",
-          membership_id: "3",
-        },
-      ];
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
 
       // Ordenar las asistencias por fecha (más recientes primero)
-      const sortedAttendances = [...mockAttendances].sort(
+      const sortedAttendances = data.sort(
         (a, b) =>
           new Date(b.check_in_time).getTime() -
           new Date(a.check_in_time).getTime()
       );
 
-      // Simular un retraso en la carga
-      setTimeout(() => {
-        setAttendances(sortedAttendances);
-      }, 800);
+      // Actualiza el estado con las asistencias ordenadas
+      setAttendances(sortedAttendances);
     } catch (error) {
       console.error("Error al cargar las asistencias:", error);
       toast.error("Error al cargar las asistencias");
@@ -354,24 +182,24 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
 
     setIsLoading(true);
     try {
-      // En un entorno real, esto sería una llamada a la API
-      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${params.id}`, {
-      //   method: 'PATCH',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${token}`
-      //   },
-      //   body: JSON.stringify(editedUser)
-      // });
-      // const updatedUser = await response.json();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/${params.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(editedUser),
+        }
+      );
+      const updatedUser = await response.json();
 
-      // Simulamos la actualización
-      setTimeout(() => {
-        setUserData({ ...userData, ...editedUser } as User);
-        setShowEditModal(false);
-        toast.success("Perfil actualizado correctamente");
-        setIsLoading(false);
-      }, 500);
+      // Actualiza el estado con los datos del usuario actualizado
+      setUserData({ ...userData, ...updatedUser } as User);
+      setShowEditModal(false);
+      toast.success("Perfil actualizado correctamente");
+      setIsLoading(false);
     } catch (error) {
       console.error("Error al actualizar el perfil:", error);
       toast.error("Error al actualizar el perfil");
@@ -431,29 +259,32 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
 
     setIsLoading(true);
     try {
-      // En un entorno real, esto sería una llamada a la API
-      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${params.id}/routine`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${token}`
-      //   },
-      //   body: JSON.stringify({ routine: JSON.parse(routineText), has_routine: true })
-      // });
-      // const data = await response.json();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/${params.id}/routine`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            routine: JSON.parse(routineText),
+            has_routine: true,
+          }),
+        }
+      );
+      const data = await response.json();
 
-      // Simulamos la actualización
-      setTimeout(() => {
-        setUserData({
-          ...userData,
-          has_routine: true,
-          routine: JSON.parse(routineText),
-        });
-        setHasRoutine(true);
-        setShowRoutineModal(false);
-        toast.success("Rutina asignada correctamente");
-        setIsLoading(false);
-      }, 500);
+      // Actualiza el estado con los datos actualizados
+      setUserData({
+        ...userData,
+        has_routine: true,
+        routine: JSON.parse(routineText),
+      });
+      setHasRoutine(true);
+      setShowRoutineModal(false);
+      toast.success("Rutina asignada correctamente");
+      setIsLoading(false);
     } catch (error) {
       console.error("Error al asignar la rutina:", error);
       toast.error("Error al asignar la rutina");
@@ -467,33 +298,32 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
 
     setIsLoading(true);
     try {
-      // En un entorno real, esto sería una llamada a la API
-      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${params.id}/routine`, {
-      //   method: 'DELETE',
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`
-      //   }
-      // });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/${params.id}/routine`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      // Simulamos la actualización
-      setTimeout(() => {
-        setUserData({
-          ...userData,
-          has_routine: false,
-          routine: null,
-        });
-        setHasRoutine(false);
-        setRoutineText("");
-        toast.success("Rutina eliminada correctamente");
-        setIsLoading(false);
-      }, 500);
+      // Actualiza el estado después de eliminar la rutina
+      setUserData({
+        ...userData,
+        has_routine: false,
+        routine: null,
+      });
+      setHasRoutine(false);
+      setRoutineText("");
+      toast.success("Rutina eliminada correctamente");
+      setIsLoading(false);
     } catch (error) {
       console.error("Error al eliminar la rutina:", error);
       toast.error("Error al eliminar la rutina");
       setIsLoading(false);
     }
   };
-
   // Función para inicializar la edición de rutina
   const initRoutineEdit = () => {
     setShowRoutineModal(true);
