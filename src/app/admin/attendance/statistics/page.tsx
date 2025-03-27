@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import BackgroundLogo from '@/components/BackgroundLogo';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, subWeeks } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 // Tipo para las estadísticas de asistencia
@@ -31,7 +31,7 @@ interface AttendanceStats {
 }
 
 const AttendanceStatisticsPage = () => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading, token } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<AttendanceStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,78 +55,26 @@ const AttendanceStatisticsPage = () => {
     }
   }, [user, isAdmin, dateRange]);
 
-  // Función para obtener estadísticas de asistencia (simuladas por ahora)
+  // Función para obtener estadísticas de asistencia
   const fetchAttendanceStats = async () => {
     setIsLoading(true);
     try {
-      // En un entorno real, esto sería una llamada a la API
-      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/attendance/statistics?range=${dateRange}`);
-      // const data = await response.json();
-      
-      // Simulamos datos para la demostración
-      const today = new Date();
-      const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 1 });
-      const endOfCurrentWeek = endOfWeek(today, { weekStartsOn: 1 });
-      
-      // Generar datos diarios para la semana actual
-      const daysInWeek = eachDayOfInterval({
-        start: startOfCurrentWeek,
-        end: endOfCurrentWeek
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
+      const response = await fetch(`${baseUrl}/attendance/statistics?range=${dateRange}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
       
-      const dailyData = daysInWeek.map(day => ({
-        date: format(day, 'EEEE', { locale: es }),
-        count: Math.floor(Math.random() * 30) + 10 // Entre 10 y 40 asistencias
-      }));
+      if (!response.ok) {
+        throw new Error('Error al cargar las estadísticas de asistencia');
+      }
       
-      // Generar datos por hora
-      const hourlyData = Array.from({ length: 14 }, (_, i) => ({
-        hour: `${i + 8}:00`, // Desde las 8:00 hasta las 22:00
-        count: Math.floor(Math.random() * 15) + 1 // Entre 1 y 15 asistencias
-      }));
-      
-      // Calcular hora pico
-      const peakHourData = [...hourlyData].sort((a, b) => b.count - a.count)[0];
-      
-      // Calcular día pico
-      const peakDayData = [...dailyData].sort((a, b) => b.count - a.count)[0];
-      
-      // Datos de membresías
-      const membershipBreakdown = [
-        {
-          type: 'Mensual completo',
-          count: 65,
-          percentage: 65
-        },
-        {
-          type: 'Kickboxing (2 días)',
-          count: 20,
-          percentage: 20
-        },
-        {
-          type: 'Kickboxing (3 días)',
-          count: 15,
-          percentage: 15
-        }
-      ];
-      
-      const mockStats: AttendanceStats = {
-        totalToday: Math.floor(Math.random() * 30) + 20, // Entre 20 y 50 asistencias
-        totalWeek: dailyData.reduce((sum, day) => sum + day.count, 0),
-        totalMonth: dailyData.reduce((sum, day) => sum + day.count, 0) * 4, // Aproximado
-        averagePerDay: Math.round(dailyData.reduce((sum, day) => sum + day.count, 0) / 7),
-        peakHour: peakHourData.hour,
-        peakDay: peakDayData.date,
-        membershipBreakdown,
-        dailyData,
-        hourlyData
-      };
-      
-      // Simular un retraso en la carga
-      setTimeout(() => {
-        setStats(mockStats);
-        setIsLoading(false);
-      }, 800);
+      const data = await response.json();
+      setStats(data);
+      setIsLoading(false);
     } catch (error) {
       console.error('Error al cargar las estadísticas de asistencia:', error);
       setStats(null);

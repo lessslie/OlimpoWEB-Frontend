@@ -21,7 +21,7 @@ interface Attendance {
 }
 
 const AttendancePage = () => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading, token } = useAuth();
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [attendanceData, setAttendanceData] = useState<Attendance[]>([]);
@@ -54,64 +54,29 @@ const AttendancePage = () => {
     filterAttendanceData();
   }, [attendanceData, searchTerm, membershipFilter]);
 
-  // Función para obtener datos de asistencia (simulados por ahora)
+  // Función para obtener datos de asistencia
   const fetchAttendanceData = async (date: Date) => {
     setIsLoading(true);
     try {
-      // En un entorno real, esto sería una llamada a la API
-      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/attendance/date/${format(date, 'yyyy-MM-dd')}`);
-      // const data = await response.json();
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
+      const formattedDate = format(date, 'yyyy-MM-dd');
       
-      // Simulamos datos para la demostración
-      const mockData: Attendance[] = [
-        {
-          id: '1',
-          userId: '101',
-          userName: 'Juan Pérez',
-          checkInTime: `${format(date, 'yyyy-MM-dd')}T08:15:00`,
-          membershipType: 'Mensual completo',
-          membershipStatus: 'Activa'
-        },
-        {
-          id: '2',
-          userId: '102',
-          userName: 'María González',
-          checkInTime: `${format(date, 'yyyy-MM-dd')}T10:00:00`,
-          membershipType: 'Kickboxing (2 días)',
-          membershipStatus: 'Activa'
-        },
-        {
-          id: '3',
-          userId: '103',
-          userName: 'Carlos Rodríguez',
-          checkInTime: `${format(date, 'yyyy-MM-dd')}T16:20:00`,
-          membershipType: 'Mensual completo',
-          membershipStatus: 'Activa'
-        },
-        {
-          id: '4',
-          userId: '104',
-          userName: 'Laura Fernández',
-          checkInTime: `${format(date, 'yyyy-MM-dd')}T18:30:00`,
-          membershipType: 'Kickboxing (3 días)',
-          membershipStatus: 'Activa'
-        },
-        {
-          id: '5',
-          userId: '105',
-          userName: 'Roberto Martínez',
-          checkInTime: `${format(date, 'yyyy-MM-dd')}T19:15:00`,
-          membershipType: 'Mensual completo',
-          membershipStatus: 'Por vencer'
+      const response = await fetch(`${baseUrl}/attendance/date/${formattedDate}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
-      ];
+      });
       
-      // Simular un retraso en la carga
-      setTimeout(() => {
-        setAttendanceData(mockData);
-        setTotalAttendance(mockData.length);
-        setIsLoading(false);
-      }, 500);
+      if (!response.ok) {
+        throw new Error('Error al cargar los datos de asistencia');
+      }
+      
+      const data = await response.json();
+      setAttendanceData(data);
+      setTotalAttendance(data.length);
+      setIsLoading(false);
     } catch (error) {
       console.error('Error al cargar los datos de asistencia:', error);
       setAttendanceData([]);

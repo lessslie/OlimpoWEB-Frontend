@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import { attendanceService, Membership } from '@/services/attendance.service';
 
 const QRDisplayPage = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, token } = useAuth();
   const router = useRouter();
   const [qrValue, setQrValue] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -35,32 +35,34 @@ const QRDisplayPage = () => {
   // Función para obtener información de la membresía activa
   const fetchMembershipInfo = async () => {
     try {
-      // En un entorno real, esto sería una llamada a la API
-      // const response = await apiService.get(`/users/${user.id}/active-membership`);
-      // const membershipData = response.data;
+      if (!user || !user.id) {
+        throw new Error('Usuario no encontrado');
+      }
       
-      // Simulamos datos para la demostración
-      const mockMembership: Membership = {
-        id: '123',
-        type: 'KICKBOXING_2', // Cambia a 'MONTHLY', 'KICKBOXING_2' o 'KICKBOXING_3' para probar diferentes mensajes
-        start_date: '2023-03-01T00:00:00Z',
-        end_date: '2023-04-01T00:00:00Z', // Ajusta esta fecha para probar diferentes escenarios
-        status: 'active',
-        price: 5000,
-        days_per_week: 2,
-        current_week_attendances: 1 // Cambia este valor para probar diferentes escenarios
-      };
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
+      const response = await fetch(`${baseUrl}/memberships/user/${user.id}/active`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
-      setActiveMembership(mockMembership);
+      if (!response.ok) {
+        throw new Error('Error al obtener información de membresía');
+      }
+      
+      const membershipData = await response.json();
+      setActiveMembership(membershipData);
       
       // Calcular días hasta el vencimiento
-      if (mockMembership) {
-        const days = attendanceService.getDaysUntilExpiration(mockMembership);
+      if (membershipData) {
+        const days = attendanceService.getDaysUntilExpiration(membershipData);
         setDaysUntilExpiration(days);
         
         // Si es kickboxing, obtener asistencias semanales
-        if (mockMembership.type.includes('KICKBOXING')) {
-          setWeeklyAttendances(mockMembership.current_week_attendances || 0);
+        if (membershipData.type.includes('KICKBOXING')) {
+          setWeeklyAttendances(membershipData.current_week_attendances || 0);
         }
       }
     } catch (error) {

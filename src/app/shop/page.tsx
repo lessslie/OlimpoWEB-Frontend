@@ -37,109 +37,33 @@ const ShopPage = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      // En un entorno real, esto sería una llamada a la API
-      // const response = await apiService.get('/products');
-      // const data = response.data;
       
-      // Simulamos datos para la demostración
-      const mockProducts: Product[] = [
-        {
-          id: '1',
-          name: 'Proteína Whey 1kg',
-          description: 'Proteína de suero de leche de alta calidad para optimizar la recuperación muscular.',
-          price: 15000,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Suplementos',
-          stock: 25,
-          available: true,
-          featured: true
-        },
-        {
-          id: '2',
-          name: 'Guantes de Kickboxing',
-          description: 'Guantes profesionales para entrenamiento de kickboxing con protección extra para las muñecas.',
-          price: 12000,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Equipamiento',
-          stock: 15,
-          available: true
-        },
-        {
-          id: '3',
-          name: 'Shaker 600ml',
-          description: 'Botella mezcladora para preparar batidos de proteínas y suplementos.',
-          price: 3500,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Accesorios',
-          stock: 50,
-          available: true
-        },
-        {
-          id: '4',
-          name: 'Creatina Monohidrato 300g',
-          description: 'Suplemento para aumentar la fuerza y el rendimiento durante entrenamientos intensos.',
-          price: 8000,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Suplementos',
-          stock: 0,
-          available: false
-        },
-        {
-          id: '5',
-          name: 'Cinturón de levantamiento',
-          description: 'Cinturón de cuero para soporte lumbar durante levantamientos pesados.',
-          price: 9500,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Equipamiento',
-          stock: 10,
-          available: true,
-          featured: true
-        },
-        {
-          id: '6',
-          name: 'Camiseta Olimpo Gym',
-          description: 'Camiseta oficial del gimnasio, material transpirable y cómodo para entrenar.',
-          price: 5000,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Indumentaria',
-          stock: 30,
-          available: true
-        },
-        {
-          id: '7',
-          name: 'Pre-Entrenamiento 300g',
-          description: 'Fórmula avanzada para maximizar tu energía y rendimiento durante el entrenamiento.',
-          price: 12500,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Suplementos',
-          stock: 15,
-          available: true
-        },
-        {
-          id: '8',
-          name: 'Banda de Resistencia Set x3',
-          description: 'Set de bandas elásticas de resistencia para entrenamiento en casa o en el gimnasio.',
-          price: 6500,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Accesorios',
-          stock: 20,
-          available: true
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
+      const response = await fetch(`${baseUrl}/products`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
         }
-      ];
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al cargar los productos');
+      }
+      
+      const data = await response.json();
       
       // Filtrar solo productos disponibles para la tienda
-      const availableProducts = mockProducts.filter(product => product.available);
+      const availableProducts = data.filter((product: Product) => product.available);
       
       // Extraer categorías únicas de los productos
-      const uniqueCategories = Array.from(new Set(availableProducts.map(product => product.category)));
-      setCategories(uniqueCategories);
+      const uniqueCategories: string[] = Array.from(
+        new Set(availableProducts.map((product: Product) => product.category))
+      );
       
-      // Simular un retraso en la carga
-      setTimeout(() => {
-        setProducts(availableProducts);
-        setFilteredProducts(availableProducts);
-        setLoading(false);
-      }, 500);
+      setCategories(uniqueCategories);
+      setProducts(availableProducts);
+      setFilteredProducts(availableProducts);
+      setLoading(false);
     } catch (error) {
       console.error('Error al cargar los productos:', error);
       toast.error('No se pudieron cargar los productos');

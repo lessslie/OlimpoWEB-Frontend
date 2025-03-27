@@ -19,7 +19,7 @@ interface Exercise {
 }
 
 const RoutinePage = () => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading, token } = useAuth();
   const router = useRouter();
   const [routine, setRoutine] = useState<Exercise[]>([]);
   const [loadingRoutine, setLoadingRoutine] = useState(true);
@@ -45,50 +45,25 @@ const RoutinePage = () => {
     try {
       setLoadingRoutine(true);
       
-      // En un entorno real, esto sería una llamada a la API
-      // const response = await fetch(`/api/users/${user.id}/routine`);
-      // const data = await response.json();
-      // setRoutine(data);
+      if (!user || !user.id) {
+        throw new Error('Usuario no encontrado');
+      }
       
-      // Simulamos datos para la demostración
-      const mockRoutine: Exercise[] = [
-        // Lunes - Pecho y Tríceps
-        { id: '1', name: 'Press de banca', sets: 4, reps: '8-10', rest: '90 seg', day: 'Lunes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Bench-Press.jpg', mediaType: 'image' },
-        { id: '2', name: 'Press inclinado con mancuernas', sets: 3, reps: '10-12', rest: '60 seg', day: 'Lunes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2017/06/Incline-Dumbbell-Press.jpg', mediaType: 'image' },
-        { id: '3', name: 'Aperturas en máquina', sets: 3, reps: '12-15', rest: '60 seg', day: 'Lunes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Pec-Deck-Machine.jpg', mediaType: 'image' },
-        { id: '4', name: 'Fondos en paralelas', sets: 3, reps: '10-12', rest: '60 seg', day: 'Lunes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2017/01/Triceps-Dips.jpg', mediaType: 'image' },
-        { id: '5', name: 'Extensiones de tríceps en polea', sets: 3, reps: '12-15', rest: '60 seg', day: 'Lunes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Triceps-Pushdown.jpg', mediaType: 'image' },
-        
-        // Martes - Espalda y Bíceps
-        { id: '6', name: 'Dominadas', sets: 4, reps: 'Máximas', rest: '90 seg', day: 'Martes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Pull-Ups.jpg', mediaType: 'image' },
-        { id: '7', name: 'Remo con barra', sets: 3, reps: '8-10', rest: '90 seg', day: 'Martes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Barbell-Row.jpg', mediaType: 'image' },
-        { id: '8', name: 'Remo en máquina', sets: 3, reps: '10-12', rest: '60 seg', day: 'Martes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Seated-Row.jpg', mediaType: 'image' },
-        { id: '9', name: 'Curl de bíceps con barra', sets: 3, reps: '10-12', rest: '60 seg', day: 'Martes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Barbell-Curl.jpg', mediaType: 'image' },
-        { id: '10', name: 'Curl martillo', sets: 3, reps: '12-15', rest: '60 seg', day: 'Martes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Hammer-Curl.jpg', mediaType: 'image' },
-        
-        // Miércoles - Piernas
-        { id: '11', name: 'Sentadillas', sets: 4, reps: '8-10', rest: '120 seg', day: 'Miércoles', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Squat.jpg', mediaType: 'image' },
-        { id: '12', name: 'Prensa de piernas', sets: 3, reps: '10-12', rest: '90 seg', day: 'Miércoles', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Leg-Press.jpg', mediaType: 'image' },
-        { id: '13', name: 'Extensiones de cuádriceps', sets: 3, reps: '12-15', rest: '60 seg', day: 'Miércoles', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Leg-Extension.jpg', mediaType: 'image' },
-        { id: '14', name: 'Curl femoral', sets: 3, reps: '12-15', rest: '60 seg', day: 'Miércoles', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Leg-Curl.jpg', mediaType: 'image' },
-        { id: '15', name: 'Elevaciones de pantorrilla', sets: 4, reps: '15-20', rest: '60 seg', day: 'Miércoles', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Standing-Calf-Raise.jpg', mediaType: 'image' },
-        
-        // Jueves - Hombros y Trapecios
-        { id: '16', name: 'Press militar', sets: 4, reps: '8-10', rest: '90 seg', day: 'Jueves', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Shoulder-Press.jpg', mediaType: 'image' },
-        { id: '17', name: 'Elevaciones laterales', sets: 3, reps: '12-15', rest: '60 seg', day: 'Jueves', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Lateral-Raise.jpg', mediaType: 'image' },
-        { id: '18', name: 'Elevaciones frontales', sets: 3, reps: '12-15', rest: '60 seg', day: 'Jueves', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Front-Raise.jpg', mediaType: 'image' },
-        { id: '19', name: 'Pájaros', sets: 3, reps: '12-15', rest: '60 seg', day: 'Jueves', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Reverse-Fly.jpg', mediaType: 'image' },
-        { id: '20', name: 'Encogimientos con barra', sets: 4, reps: '12-15', rest: '60 seg', day: 'Jueves', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Barbell-Shrug.jpg', mediaType: 'image' },
-        
-        // Viernes - Full Body
-        { id: '21', name: 'Press de banca', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Bench-Press.jpg', mediaType: 'image' },
-        { id: '22', name: 'Remo con mancuerna', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Dumbbell-Row.jpg', mediaType: 'image' },
-        { id: '23', name: 'Sentadillas', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Squat.jpg', mediaType: 'image' },
-        { id: '24', name: 'Press militar', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Shoulder-Press.jpg', mediaType: 'image' },
-        { id: '25', name: 'Curl de bíceps', sets: 3, reps: '10-12', rest: '60 seg', day: 'Viernes', mediaUrl: 'https://www.fitprince.com/wp-content/uploads/2016/10/Barbell-Curl.jpg', mediaType: 'image' },
-      ];
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
+      const response = await fetch(`${baseUrl}/routines/user/${user.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
-      setRoutine(mockRoutine);
+      if (!response.ok) {
+        throw new Error('Error al cargar la rutina');
+      }
+      
+      const data = await response.json();
+      setRoutine(data);
     } catch (error) {
       console.error('Error al cargar la rutina:', error);
       toast.error('No se pudo cargar tu rutina');

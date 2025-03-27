@@ -40,75 +40,36 @@ const AttendanceHistoryPage = () => {
   const fetchAttendanceHistory = async () => {
     setIsLoading(true);
     try {
-      // Verificar si estamos en modo de desarrollo o producción
-      const isDevelopment = process.env.NODE_ENV === 'development';
-      
-      if (isDevelopment || !user?.id) {
-        // En desarrollo o si no hay usuario, usar datos simulados
-        const mockAttendanceData: Attendance[] = generateMockAttendanceData();
-        setAttendanceRecords(mockAttendanceData);
-        
-        // Extraer las fechas de asistencia para marcarlas en el calendario
-        const dates = mockAttendanceData.map(record => new Date(record.check_in_time));
-        setAttendanceDates(dates);
-      } else {
-        // En producción, hacer la solicitud a la API
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
-        const response = await fetch(`${baseUrl}/attendance/user/${user.id}/history`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Error al obtener el historial de asistencias');
-        }
-        
-        const data = await response.json();
-        setAttendanceRecords(data);
-        
-        // Extraer las fechas de asistencia para marcarlas en el calendario
-        const dates = data.map((record: Attendance) => new Date(record.check_in_time));
-        setAttendanceDates(dates);
+      // Hacer la solicitud a la API
+      if (!user || !user.id) {
+        console.error('No hay usuario autenticado');
+        return;
       }
+      
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
+      const response = await fetch(`${baseUrl}/attendance/user/${user.id}/history`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener el historial de asistencias');
+      }
+      
+      const data = await response.json();
+      setAttendanceRecords(data);
+      
+      // Extraer las fechas de asistencia para marcarlas en el calendario
+      const dates = data.map((record: Attendance) => new Date(record.check_in_time));
+      setAttendanceDates(dates);
     } catch (error) {
       console.error('Error al obtener el historial de asistencias:', error);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Generar datos de asistencia simulados para demostración
-  const generateMockAttendanceData = (): Attendance[] => {
-    const mockData: Attendance[] = [];
-    const today = new Date();
-    
-    // Generar asistencias para los últimos 30 días (aleatoriamente)
-    for (let i = 0; i < 30; i++) {
-      // Agregar asistencia solo en algunos días (aproximadamente 3 veces por semana)
-      if (Math.random() > 0.6) {
-        const date = new Date(today);
-        date.setDate(today.getDate() - i);
-        
-        // Hora aleatoria entre 8:00 y 20:00
-        const hours = Math.floor(Math.random() * 12) + 8;
-        const minutes = Math.floor(Math.random() * 60);
-        date.setHours(hours, minutes, 0, 0);
-        
-        mockData.push({
-          id: `mock-attendance-${i}`,
-          check_in_time: date.toISOString(),
-          user_id: user?.id || 'user-id',
-        });
-      }
-    }
-    
-    // Ordenar por fecha (más reciente primero)
-    return mockData.sort((a, b) => 
-      new Date(b.check_in_time).getTime() - new Date(a.check_in_time).getTime()
-    );
   };
 
   // Filtrar asistencias por fecha seleccionada
