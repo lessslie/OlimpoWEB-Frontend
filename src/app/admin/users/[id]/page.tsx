@@ -431,11 +431,19 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       </div>
     );
   }
-
-  if (!user || !isAdmin || !userData) {
+  
+  if (!user || !isAdmin) {
     return null;
   }
-
+  
+  // Si no hay userData, también muestra un spinner, pero no retorna null
+  if (!userData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
   return (
     <div className="container mx-auto px-4 py-8">
       <BackgroundLogo opacity={0.05} />
