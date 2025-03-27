@@ -25,33 +25,22 @@ const BlogPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
+    const fetchBlogPosts = async () => {
+      try {
+        // Aquí se implementaría la llamada a la API para obtener los posts
+        // Por ahora, usamos datos de ejemplo
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setPosts(sampleBlogPosts);
+      } catch (error) {
+        console.error('Error al cargar los artículos del blog:', error);
+        toast.error('No se pudieron cargar los artículos del blog');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchBlogPosts();
   }, []);
-
-  const fetchBlogPosts = async () => {
-    try {
-      setLoading(true);
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
-      const response = await fetch(`${baseUrl}/blog/posts`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Error al cargar los artículos del blog');
-      }
-      
-      const data = await response.json();
-      setPosts(data);
-    } catch (error) {
-      console.error('Error al cargar los artículos del blog:', error);
-      toast.error('No se pudieron cargar los artículos del blog');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const categories = ['all', ...Array.from(new Set(posts.map(post => post.category)))];
 
@@ -158,5 +147,69 @@ const BlogPage = () => {
     </div>
   );
 };
+
+// Datos de ejemplo para el blog
+const sampleBlogPosts: BlogPost[] = [
+  {
+    id: '1',
+    title: 'Cómo empezar tu rutina de entrenamiento',
+    excerpt: 'Consejos prácticos para principiantes que quieren comenzar a entrenar de manera efectiva.',
+    content: 'Contenido completo del artículo...',
+    date: '15 Mar 2025',
+    image: '/images/rutinaEntrenamiento.jpeg',
+    category: 'entrenamiento',
+    tags: ['principiantes', 'rutina', 'consejos']
+  },
+  {
+    id: '2',
+    title: 'Nutrición para ganar masa muscular',
+    excerpt: 'Guía completa sobre qué alimentos consumir para maximizar el crecimiento muscular.',
+    content: 'Contenido completo del artículo...',
+    date: '10 Mar 2025',
+    image: '/images/masaMuscular.jpeg',
+    category: 'nutrición',
+    tags: ['proteínas', 'masa muscular', 'dieta']
+  },
+  {
+    id: '3',
+    title: 'Los beneficios del entrenamiento de fuerza para mujeres',
+    excerpt: 'Desmitificando creencias y explicando por qué las mujeres deberían incluir entrenamiento de fuerza.',
+    content: 'Contenido completo del artículo...',
+    date: '5 Mar 2025',
+    image: '/images/fuerzaMujeres.jpeg',
+    category: 'entrenamiento',
+    tags: ['mujeres', 'fuerza', 'mitos']
+  },
+  {
+    id: '4',
+    title: 'Cómo recuperarse después de un entrenamiento intenso',
+    excerpt: 'Estrategias efectivas para optimizar la recuperación muscular y reducir el dolor.',
+    content: 'Contenido completo del artículo...',
+    date: '28 Feb 2025',
+    image: '/images/recuperarse.jpeg',
+    category: 'recuperación',
+    tags: ['descanso', 'dolor muscular', 'suplementos']
+  },
+  {
+    id: '5',
+    title: 'Guía para una alimentación saludable',
+    excerpt: 'Principios básicos para mantener una dieta equilibrada que apoye tus objetivos fitness.',
+    content: 'Contenido completo del artículo...',
+    date: '20 Feb 2025',
+    image: '/images/guiaAlimentacion.jpeg',
+    category: 'nutrición',
+    tags: ['dieta', 'salud', 'hábitos']
+  },
+  {
+    id: '6',
+    title: 'Ejercicios para mejorar la postura',
+    excerpt: 'Rutina de ejercicios específicos para corregir problemas posturales comunes.',
+    content: 'Contenido completo del artículo...',
+    date: '15 Feb 2025',
+    image: '/images/mejorarPostura.jpeg',
+    category: 'salud',
+    tags: ['postura', 'dolor de espalda', 'oficina']
+  }
+];
 
 export default BlogPage;
