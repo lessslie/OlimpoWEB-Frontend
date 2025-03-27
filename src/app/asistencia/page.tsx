@@ -85,39 +85,24 @@ function AsistenciaContent() {
         user_id: user.id,
       };
 
-      // Codificar los datos para la URL
-      const encodedData = encodeURIComponent(JSON.stringify(qrDataWithUser));
+      console.log("Registrando asistencia con datos:", qrDataWithUser);
 
       // Determinar la URL base
       const apiBaseUrl =
         process.env.NEXT_PUBLIC_API_URL ||
         "https://olimpoweb-backend.onrender.com/api";
 
-      console.log("Registrando asistencia con datos:", qrDataWithUser);
-      console.log(
-        "URL completa:",
-        `${apiBaseUrl}/attendance/check-in?data=${encodedData}`
-      );
+      // Usar apiService para enviar datos al nuevo endpoint register
+      const response = await apiService.post("attendance/register", {
+        qrData: qrDataWithUser,
+        userId: user.id,
+      });
 
-      // Usar fetch directamente para evitar problemas con los interceptores de axios
-      const response = await fetch(
-        `${apiBaseUrl}/attendance/check-in?data=${encodedData}`
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Error de servidor: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const attendanceResponse = await response.json();
-
-      if (attendanceResponse && attendanceResponse.success) {
+      if (response && response.success) {
         setSuccess(true);
         toast.success("¡Asistencia registrada exitosamente!");
       } else {
-        const errorMsg =
-          attendanceResponse?.message || "Error al registrar asistencia";
+        const errorMsg = response?.message || "Error al registrar asistencia";
         console.error("Error en respuesta:", errorMsg);
         setError(errorMsg);
       }
@@ -125,8 +110,62 @@ function AsistenciaContent() {
       console.error("Error al registrar asistencia:", error);
       setError(
         "No se pudo registrar la asistencia. Intente nuevamente. " +
-          error.message
+          (error.message || "")
       );
+
+      // Intentar con método alternativo si el primer intento falla
+      try {
+        console.log("Intentando método alternativo...");
+
+        // Crear un nuevo objeto de datos que incluya el user_id
+        const qrDataWithUser = {
+          ...data,
+          user_id: user.id,
+        };
+
+        // Codificar los datos para la URL
+        const encodedData = encodeURIComponent(JSON.stringify(qrDataWithUser));
+
+        // Determinar la URL base
+        const apiBaseUrl =
+          process.env.NEXT_PUBLIC_API_URL ||
+          "https://olimpoweb-backend.onrender.com/api";
+
+        // Usar fetch directamente con el método GET
+        const backupResponse = await fetch(
+          `${apiBaseUrl}/attendance/check-in?data=${encodedData}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${
+                localStorage.getItem("token") || sessionStorage.getItem("token")
+              }`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!backupResponse.ok) {
+          throw new Error(
+            `Error de servidor: ${backupResponse.status} ${backupResponse.statusText}`
+          );
+        }
+
+        const backupData = await backupResponse.json();
+
+        if (backupData && backupData.success) {
+          setSuccess(true);
+          toast.success("¡Asistencia registrada exitosamente!");
+          setError(""); // Limpiar el error anterior
+        } else {
+          throw new Error(
+            backupData?.message || "Error en respuesta alternativa"
+          );
+        }
+      } catch (backupError) {
+        console.error("Error en método alternativo:", backupError);
+        // No sobrescribir el error original
+      }
     } finally {
       setRegistering(false);
       setLoading(false);
