@@ -83,8 +83,8 @@ const UsersPage = () => {
       fetchUsers();
     }
   }, [user, isAdmin, fetchUsers]);
- 
-// Función para filtrar usuarios
+
+  // Función para filtrar usuarios
   const filterUsers = useCallback(() => {
     let filtered = [...users];
 
@@ -572,233 +572,232 @@ const UsersPage = () => {
                   />
                 </div>
               </div>
-                <div>
-                  <label
-                    htmlFor="last_name"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Apellido *
-                  </label>
-                  <input
-                    type="text"
-                    id="last_name"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    value={currentUser?.last_name || ""}
-                    onChange={(e) =>
-                      setCurrentUser({
-                        ...currentUser,
-                        last_name: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </div>
-              </div>
               <div>
                 <label
-                  htmlFor="email"
+                  htmlFor="last_name"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Email *
+                  Apellido *
                 </label>
                 <input
-                  type="email"
-                  id="email"
+                  type="text"
+                  id="last_name"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  value={currentUser?.email || ""}
+                  value={currentUser?.last_name || ""}
                   onChange={(e) =>
-                    setCurrentUser({ ...currentUser, email: e.target.value })
+                    setCurrentUser({
+                      ...currentUser,
+                      last_name: e.target.value,
+                    })
                   }
                   required
                 />
               </div>
+            </div>
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Email *
+              </label>
+              <input
+                type="email"
+                id="email"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                value={currentUser?.email || ""}
+                onChange={(e) =>
+                  setCurrentUser({ ...currentUser, email: e.target.value })
+                }
+                required
+              />
+            </div>
 
-              {!isEditing && (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label
-                        htmlFor="password"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Contraseña *
-                      </label>
-                      <input
-                        type="password"
-                        id="password"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="confirmPassword"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Confirmar Contraseña *
-                      </label>
-                      <input
-                        type="password"
-                        id="confirmPassword"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-
+            {!isEditing && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label
-                      htmlFor="membership_type"
+                      htmlFor="password"
                       className="block text-sm font-medium text-gray-700 mb-1"
                     >
-                      Tipo de Membresía *
+                      Contraseña *
                     </label>
-                    <select
-                      id="membership_type"
+                    <input
+                      type="password"
+                      id="password"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                      value={currentUser?.membership_type || ""}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="confirmPassword"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Confirmar Contraseña *
+                    </label>
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="membership_type"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Tipo de Membresía *
+                  </label>
+                  <select
+                    id="membership_type"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    value={currentUser?.membership_type || ""}
+                    onChange={(e) =>
+                      setCurrentUser({
+                        ...currentUser,
+                        membership_type: e.target.value,
+                      })
+                    }
+                    required
+                  >
+                    <option value="">Seleccionar membresía</option>
+                    {membershipTypes.map((type) => (
+                      <option key={type.id} value={type.id}>
+                        {type.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="membership_start_date"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Fecha de inicio de membresía *
+                    </label>
+                    <input
+                      type="date"
+                      id="membership_start_date"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      value={
+                        currentUser?.membership_start_date ||
+                        new Date().toISOString().split("T")[0]
+                      }
                       onChange={(e) =>
                         setCurrentUser({
                           ...currentUser,
-                          membership_type: e.target.value,
+                          membership_start_date: e.target.value,
                         })
                       }
                       required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="payment_date"
+                      className="block text-sm font-medium text-gray-700 mb-1"
                     >
-                      <option value="">Seleccionar membresía</option>
-                      {membershipTypes.map((type) => (
-                        <option key={type.id} value={type.id}>
-                          {type.name}
-                        </option>
-                      ))}
-                    </select>
+                      Fecha de pago *
+                    </label>
+                    <input
+                      type="date"
+                      id="payment_date"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      value={
+                        currentUser?.payment_date ||
+                        new Date().toISOString().split("T")[0]
+                      }
+                      onChange={(e) =>
+                        setCurrentUser({
+                          ...currentUser,
+                          payment_date: e.target.value,
+                        })
+                      }
+                      required
+                    />
                   </div>
+                </div>
+              </>
+            )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label
-                        htmlFor="membership_start_date"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Fecha de inicio de membresía *
-                      </label>
-                      <input
-                        type="date"
-                        id="membership_start_date"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        value={
-                          currentUser?.membership_start_date ||
-                          new Date().toISOString().split("T")[0]
-                        }
-                        onChange={(e) =>
-                          setCurrentUser({
-                            ...currentUser,
-                            membership_start_date: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="payment_date"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Fecha de pago *
-                      </label>
-                      <input
-                        type="date"
-                        id="payment_date"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        value={
-                          currentUser?.payment_date ||
-                          new Date().toISOString().split("T")[0]
-                        }
-                        onChange={(e) =>
-                          setCurrentUser({
-                            ...currentUser,
-                            payment_date: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <div>
-                <label
-                  htmlFor="phone"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Teléfono
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  value={currentUser?.phone || ""}
-                  onChange={(e) =>
-                    setCurrentUser({ ...currentUser, phone: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="role"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Rol
-                </label>
-                <select
-                  id="role"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  value={currentUser?.role || "user"}
-                  onChange={(e) => {
-                    const role = e.target.value as "user" | "admin";
-                    setCurrentUser({
-                      ...currentUser,
-                      role: role,
-                      is_admin: role === "admin",
-                    });
-                  }}
-                >
-                  <option value="user">Usuario</option>
-                  <option value="admin">Administrador</option>
-                </select>
-              </div>
-              <p className="text-sm text-gray-500 mt-2">* Campos requeridos</p>
+            <div>
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Teléfono
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                value={currentUser?.phone || ""}
+                onChange={(e) =>
+                  setCurrentUser({ ...currentUser, phone: e.target.value })
+                }
+              />
             </div>
-            <div className="flex justify-end space-x-4 mt-6">
-              <button
-                onClick={() => {
-                  setShowUserModal(false);
-                  setCurrentUser(null);
+            <div>
+              <label
+                htmlFor="role"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Rol
+              </label>
+              <select
+                id="role"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                value={currentUser?.role || "user"}
+                onChange={(e) => {
+                  const role = e.target.value as "user" | "admin";
+                  setCurrentUser({
+                    ...currentUser,
+                    role: role,
+                    is_admin: role === "admin",
+                  });
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                disabled={isLoading}
               >
-                Cancelar
-              </button>
-              <button
-                onClick={saveUser}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                disabled={isLoading}
-              >
-                {isLoading
-                  ? isEditing
-                    ? "Actualizando..."
-                    : "Creando..."
-                  : isEditing
-                  ? "Actualizar"
-                  : "Crear"}
-              </button>
+                <option value="user">Usuario</option>
+                <option value="admin">Administrador</option>
+              </select>
             </div>
+            <p className="text-sm text-gray-500 mt-2">* Campos requeridos</p>
+          </div>
+          <div className="flex justify-end space-x-4 mt-6">
+            <button
+              onClick={() => {
+                setShowUserModal(false);
+                setCurrentUser(null);
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              disabled={isLoading}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={saveUser}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              disabled={isLoading}
+            >
+              {isLoading
+                ? isEditing
+                  ? "Actualizando..."
+                  : "Creando..."
+                : isEditing
+                ? "Actualizar"
+                : "Crear"}
+            </button>
           </div>
         </div>
       )}

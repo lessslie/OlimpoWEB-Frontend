@@ -47,7 +47,6 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"profile" | "memberships" | "attendance" | "routine">("profile");
-  "profile" | "memberships" | "attendance" | ("routine" > "profile");
   const [showEditModal, setShowEditModal] = useState(false);
   const [editedUser, setEditedUser] = useState<Partial<User> | null>(null);
   const [showAllAttendances, setShowAllAttendances] = useState(false);
