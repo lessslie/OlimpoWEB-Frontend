@@ -9,13 +9,10 @@ import { toast } from 'react-hot-toast';
 
 // Categorías predefinidas
 const CATEGORIES = [
-  'Suplementos',
-  'Equipamiento',
-  'Accesorios',
-  'Indumentaria',
-  'Bebidas',
-  'Snacks',
-  'Merchandising'
+  { id: "supplements", name: "Suplementos" },
+  { id: "clothing", name: "Ropa" },
+  { id: "equipment", name: "Equipamiento" },
+  { id: "accessories", name: "Accesorios" },
 ];
 
 const NewProductPage = () => {
@@ -80,20 +77,22 @@ const NewProductPage = () => {
     setIsSaving(true);
     
     try {
-      // Preparar datos para enviar
+      // Preparar datos para enviar según el formato que espera el backend
       const productData = {
-        ...formData,
+        name: formData.name,
+        description: formData.description,
         price: parseInt(formData.price, 10),
-        stock: parseInt(formData.stock, 10),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        image: formData.image_url,
+        category_id: formData.category,
+        stock: formData.available,
+        is_featured: formData.featured
       };
       
-      // En un entorno real, esto sería una llamada a la API
-      // await apiService.post('/products', productData);
+      console.log('Enviando producto a la API:', productData);
       
-      // Simulamos el guardado
-      console.log('Guardando producto:', productData);
+      // Realizar la llamada a la API
+      const response = await apiService.post('/products', productData);
+      console.log('Respuesta de la API:', response.data);
       
       // Mostrar mensaje de éxito
       toast.success('Producto creado correctamente');
@@ -102,9 +101,17 @@ const NewProductPage = () => {
       setTimeout(() => {
         router.push('/admin/products');
       }, 1500);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al crear el producto:', error);
-      toast.error('No se pudo crear el producto');
+      // Mostrar mensaje de error más detallado si está disponible
+      if (error.response && error.response.data && error.response.data.message) {
+        const errorMessage = Array.isArray(error.response.data.message) 
+          ? error.response.data.message.join(', ') 
+          : error.response.data.message;
+        toast.error(`Error: ${errorMessage}`);
+      } else {
+        toast.error('No se pudo crear el producto');
+      }
     } finally {
       setIsSaving(false);
     }
@@ -210,7 +217,7 @@ const NewProductPage = () => {
               >
                 <option value="">Seleccionar categoría</option>
                 {CATEGORIES.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                  <option key={category.id} value={category.id}>{category.name}</option>
                 ))}
               </select>
             </div>
