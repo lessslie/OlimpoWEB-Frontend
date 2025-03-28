@@ -1,6 +1,7 @@
+// OlimpoWEB-Frontend/src/app/admin/users/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import BackgroundLogo from "@/components/BackgroundLogo";
@@ -54,20 +55,8 @@ const UsersPage = () => {
     }
   }, [user, isAdmin, loading, router]);
 
-  // Cargar datos de usuarios
-  useEffect(() => {
-    if (user && isAdmin) {
-      fetchUsers();
-    }
-  }, [user, isAdmin]);
-
-  // Filtrar usuarios cuando cambian los filtros
-  useEffect(() => {
-    filterUsers();
-  }, [users, searchTerm, roleFilter]);
-
-  // Función para obtener usuarios
-  const fetchUsers = async () => {
+  // Función para obtener usuarios (con useCallback para evitar recreaciones)
+  const fetchUsers = useCallback(async () => {
     setIsLoading(true);
     try {
       //  En un entorno real, esto sería una llamada a la API
@@ -86,10 +75,17 @@ const UsersPage = () => {
       setUsers([]);
       setIsLoading(false);
     }
-  };
+  }, [token]);
 
-  // Función para filtrar usuarios
-  const filterUsers = () => {
+  // Cargar datos de usuarios
+  useEffect(() => {
+    if (user && isAdmin) {
+      fetchUsers();
+    }
+  }, [user, isAdmin, fetchUsers]);
+ 
+// Función para filtrar usuarios
+  const filterUsers = useCallback(() => {
     let filtered = [...users];
 
     // Filtrar por término de búsqueda (nombre, apellido o email)
@@ -108,7 +104,12 @@ const UsersPage = () => {
     }
 
     setFilteredUsers(filtered);
-  };
+  }, [users, searchTerm, roleFilter]);
+
+  // Filtrar usuarios cuando cambian los filtros
+  useEffect(() => {
+    filterUsers();
+  }, [filterUsers]);
 
   // Función para crear o actualizar un usuario
   const saveUser = async () => {
@@ -437,8 +438,10 @@ const UsersPage = () => {
                       <div className="flex justify-end space-x-3">
                         <button
                           onClick={() => {
-                            console.log(`Navegando a detalle de usuario: /admin/users/${user.id}`);
-                            router.push(`/admin/users/${user.id}`);
+                            console.log(
+                              `Navegando a detalle de usuario: /admin/users/${user.id}`
+                            );
+                            window.location.href = `/admin/users/${user.id}`;
                           }}
                           className="text-indigo-600 hover:text-indigo-900"
                         >
@@ -547,6 +550,28 @@ const UsersPage = () => {
                     required
                   />
                 </div>
+                <div>
+                  <label
+                    htmlFor="last_name"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Apellido *
+                  </label>
+                  <input
+                    type="text"
+                    id="last_name"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    value={currentUser?.last_name || ""}
+                    onChange={(e) =>
+                      setCurrentUser({
+                        ...currentUser,
+                        last_name: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
+              </div>
                 <div>
                   <label
                     htmlFor="last_name"

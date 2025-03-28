@@ -1,9 +1,10 @@
-'use client';
+//OlimpoWEB-Frontend/src/app/admin/page.tsx
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import BackgroundLogo from '@/components/BackgroundLogo';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import BackgroundLogo from "@/components/BackgroundLogo";
 
 const AdminDashboard = () => {
   const { user, isAdmin, loading } = useAuth();
@@ -12,9 +13,9 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        router.push('/login');
+        router.push("/login");
       } else if (!isAdmin) {
-        router.push('/dashboard');
+        router.push("/dashboard");
       }
     }
   }, [user, isAdmin, loading, router]);
@@ -36,13 +37,14 @@ const AdminDashboard = () => {
       <BackgroundLogo opacity={0.05} />
       <h1 className="text-3xl font-bold mb-6">Panel de Administración</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        
         {/* Gestión de Usuarios */}
         <div className="bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Gestión de Usuarios</h2>
-          <p className="text-gray-600 mb-4">Administra los usuarios del gimnasio</p>
-          <button 
-            onClick={() => router.push('/admin/users')}
+          <p className="text-gray-600 mb-4">
+            Administra los usuarios del gimnasio
+          </p>
+          <button
+            onClick={() => router.push("/admin/users")}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Ver Usuarios
@@ -53,8 +55,8 @@ const AdminDashboard = () => {
         <div className="bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Membresías</h2>
           <p className="text-gray-600 mb-4">Gestiona las membresías y pagos</p>
-          <button 
-            onClick={() => router.push('/admin/memberships')}
+          <button
+            onClick={() => router.push("/admin/memberships")}
             className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
           >
             Ver Membresías
@@ -64,9 +66,11 @@ const AdminDashboard = () => {
         {/* Asistencias */}
         <div className="bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Asistencias</h2>
-          <p className="text-gray-600 mb-4">Control de asistencias y registros</p>
-          <button 
-            onClick={() => router.push('/admin/attendance')}
+          <p className="text-gray-600 mb-4">
+            Control de asistencias y registros
+          </p>
+          <button
+            onClick={() => router.push("/admin/attendance")}
             className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
           >
             Ver Asistencias
@@ -77,8 +81,8 @@ const AdminDashboard = () => {
         <div className="bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Blog</h2>
           <p className="text-gray-600 mb-4">Administra el contenido del blog</p>
-          <button 
-            onClick={() => router.push('/admin/blog')}
+          <button
+            onClick={() => router.push("/admin/blog")}
             className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
           >
             Gestionar Blog
@@ -88,9 +92,11 @@ const AdminDashboard = () => {
         {/* Productos */}
         <div className="bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Productos</h2>
-          <p className="text-gray-600 mb-4">Gestiona el catálogo de productos</p>
-          <button 
-            onClick={() => router.push('/admin/products')}
+          <p className="text-gray-600 mb-4">
+            Gestiona el catálogo de productos
+          </p>
+          <button
+            onClick={() => router.push("/admin/products")}
             className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
           >
             Ver Productos
@@ -101,8 +107,8 @@ const AdminDashboard = () => {
         <div className="bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Configuración</h2>
           <p className="text-gray-600 mb-4">Ajustes generales del sistema</p>
-          <button 
-            onClick={() => router.push('/admin/settings')}
+          <button
+            onClick={() => router.push("/admin/settings")}
             className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
           >
             Configurar

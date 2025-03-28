@@ -1,6 +1,7 @@
+// OlimpoWEB-Frontend/src/app/admin/users/[id]/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import BackgroundLogo from "@/components/BackgroundLogo";
@@ -45,9 +46,8 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<
-    "profile" | "memberships" | "attendance" | "routine"
-  >("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "memberships" | "attendance" | "routine">("profile");
+  "profile" | "memberships" | "attendance" | ("routine" > "profile");
   const [showEditModal, setShowEditModal] = useState(false);
   const [editedUser, setEditedUser] = useState<Partial<User> | null>(null);
   const [showAllAttendances, setShowAllAttendances] = useState(false);
@@ -81,62 +81,38 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
   ];
   const [adminActiveDay, setAdminActiveDay] = useState("");
 
-  // Verificar si el usuario está autenticado y es administrador
-  useEffect(() => {
-    console.log("Verificando autenticación - loading:", loading, "user:", !!user, "isAdmin:", isAdmin);
-    if (!loading) {
-      if (!user) {
-        console.log("No hay usuario autenticado, redirigiendo a /login");
-        router.push("/login");
-        return;
-      } 
-      
-      if (!isAdmin) {
-        console.log("Usuario no es admin, redirigiendo a /dashboard");
-        router.push("/dashboard");
-        return;
-      }
-      
-      console.log("Usuario autenticado y es admin, puede ver la página");
-      
-      // Si el usuario está autenticado y es admin, cargamos los datos
-      if (params.id) {
-        console.log("Iniciando carga de datos del usuario con ID:", params.id);
-        fetchUserData();
-        fetchMemberships();
-        fetchAttendances();
-      } else {
-        console.error("No se proporcionó ID de usuario en los parámetros");
-        router.push("/admin/users");
-      }
-    }
-  }, [user, isAdmin, loading, params.id, token, router]);
-
   // Función para obtener datos del usuario
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     if (!token || !params.id) {
       console.error("No hay token o ID de usuario para obtener datos");
       return;
     }
-    
+
     setIsLoading(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
-      console.log("Obteniendo datos del usuario:", `${baseUrl}/users/${params.id}`);
-      const response = await fetch(
-        `${baseUrl}/users/${params.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005/api";
+      console.log(
+        "Obteniendo datos del usuario:",
+        `${baseUrl}/users/${params.id}`
       );
-      
+      const response = await fetch(`${baseUrl}/users/${params.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (!response.ok) {
-        console.error("Error en la respuesta:", response.status, response.statusText);
-        throw new Error(`Error al obtener los datos del usuario: ${response.status}`);
+        console.error(
+          "Error en la respuesta:",
+          response.status,
+          response.statusText
+        );
+        throw new Error(
+          `Error al obtener los datos del usuario: ${response.status}`
+        );
       }
-      
+
       const data = await response.json();
       console.log("Datos del usuario recibidos:", data);
 
@@ -158,32 +134,37 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       toast.error("Error al cargar los datos del usuario");
       setIsLoading(false);
     }
-  };
+  }, [token, params.id]);
 
   // Función para obtener membresías del usuario
-  const fetchMemberships = async () => {
+  const fetchMemberships = useCallback(async () => {
     if (!token || !params.id) {
       console.error("No hay token o ID de usuario para obtener membresías");
       return;
     }
-    
+
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
-      console.log("Obteniendo membresías del usuario:", `${baseUrl}/memberships/user/${params.id}`);
-      const response = await fetch(
-        `${baseUrl}/memberships/user/${params.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005/api";
+      console.log(
+        "Obteniendo membresías del usuario:",
+        `${baseUrl}/memberships/user/${params.id}`
       );
-      
+      const response = await fetch(`${baseUrl}/memberships/user/${params.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (!response.ok) {
-        console.error("Error en la respuesta de membresías:", response.status, response.statusText);
-        throw new Error('Error al obtener las membresías del usuario');
+        console.error(
+          "Error en la respuesta de membresías:",
+          response.status,
+          response.statusText
+        );
+        throw new Error("Error al obtener las membresías del usuario");
       }
-      
+
       const data = await response.json();
       console.log("Membresías recibidas:", data);
 
@@ -193,32 +174,37 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       console.error("Error al cargar las membresías:", error);
       toast.error("Error al cargar las membresías");
     }
-  };
-  
+  }, [token, params.id]);
+
   // Función para obtener asistencias del usuario
-  const fetchAttendances = async () => {
+  const fetchAttendances = useCallback(async () => {
     if (!token || !params.id) {
       console.error("No hay token o ID de usuario para obtener asistencias");
       return;
     }
-    
+
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
-      console.log("Obteniendo asistencias del usuario:", `${baseUrl}/attendance/user/${params.id}`);
-      const response = await fetch(
-        `${baseUrl}/attendance/user/${params.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005/api";
+      console.log(
+        "Obteniendo asistencias del usuario:",
+        `${baseUrl}/attendance/user/${params.id}`
       );
-      
+      const response = await fetch(`${baseUrl}/attendance/user/${params.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (!response.ok) {
-        console.error("Error en la respuesta de asistencias:", response.status, response.statusText);
-        throw new Error('Error al obtener las asistencias del usuario');
+        console.error(
+          "Error en la respuesta de asistencias:",
+          response.status,
+          response.statusText
+        );
+        throw new Error("Error al obtener las asistencias del usuario");
       }
-      
+
       const data = await response.json();
       console.log("Asistencias recibidas:", data);
 
@@ -235,7 +221,54 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       console.error("Error al cargar las asistencias:", error);
       toast.error("Error al cargar las asistencias");
     }
-  };
+  }, [token, params.id]);
+
+  // Verificar si el usuario está autenticado y es administrador
+  useEffect(() => {
+    console.log(
+      "Verificando autenticación - loading:",
+      loading,
+      "user:",
+      !!user,
+      "isAdmin:",
+      isAdmin
+    );
+    if (!loading) {
+      if (!user) {
+        console.log("No hay usuario autenticado, redirigiendo a /login");
+        // router.push("/login");
+        return;
+      }
+
+      if (!isAdmin) {
+        console.log("Usuario no es admin, redirigiendo a /dashboard");
+        // router.push("/dashboard");
+        return;
+      }
+
+      console.log("Usuario autenticado y es admin, puede ver la página");
+
+      // Si el usuario está autenticado y es admin, cargamos los datos
+      if (params.id) {
+        console.log("Iniciando carga de datos del usuario con ID:", params.id);
+        fetchUserData();
+        fetchMemberships();
+        fetchAttendances();
+      } else {
+        console.error("No se proporcionó ID de usuario en los parámetros");
+        router.push("/admin/users");
+      }
+    }
+  }, [
+    user,
+    isAdmin,
+    loading,
+    params.id,
+    router,
+    fetchUserData,
+    fetchMemberships,
+    fetchAttendances,
+  ]);
 
   // Función para guardar cambios en el perfil
   const saveUserChanges = async () => {
@@ -243,23 +276,21 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
 
     setIsLoading(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
-      const response = await fetch(
-        `${baseUrl}/users/${params.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(editedUser),
-        }
-      );
-      
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005/api";
+      const response = await fetch(`${baseUrl}/users/${params.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(editedUser),
+      });
+
       if (!response.ok) {
-        throw new Error('Error al actualizar el perfil');
+        throw new Error("Error al actualizar el perfil");
       }
-      
+
       const updatedUser = await response.json();
 
       // Actualiza el estado con los datos del usuario actualizado
@@ -326,26 +357,24 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
 
     setIsLoading(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
-      const response = await fetch(
-        `${baseUrl}/users/${params.id}/routine`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            routine: JSON.parse(routineText),
-            has_routine: true,
-          }),
-        }
-      );
-      
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005/api";
+      const response = await fetch(`${baseUrl}/users/${params.id}/routine`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          routine: JSON.parse(routineText),
+          has_routine: true,
+        }),
+      });
+
       if (!response.ok) {
-        throw new Error('Error al asignar la rutina');
+        throw new Error("Error al asignar la rutina");
       }
-      
+
       const data = await response.json();
 
       // Actualiza el estado con los datos actualizados
@@ -371,19 +400,17 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
 
     setIsLoading(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api';
-      const response = await fetch(
-        `${baseUrl}/users/${params.id}/routine`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005/api";
+      const response = await fetch(`${baseUrl}/users/${params.id}/routine`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (!response.ok) {
-        throw new Error('Error al eliminar la rutina');
+        throw new Error("Error al eliminar la rutina");
       }
 
       // Actualiza el estado después de eliminar la rutina
@@ -511,13 +538,13 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       </div>
     );
   }
-  
+
   if (!user || !isAdmin) {
     // Si no hay usuario o no es admin, no renderizamos nada
     // La redirección ya se maneja en el useEffect
     return null;
   }
-  
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -526,7 +553,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       </div>
     );
   }
-  
+
   // Si no hay userData, también muestra un spinner
   if (!userData) {
     return (
@@ -708,9 +735,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
                   </p>
                   <p className="mt-1 text-sm">
                     {attendances.length > 0
-                      ? formatDate(
-                          attendances[attendances.length - 1].check_in_time
-                        )
+                      ? formatDate(attendances[0].check_in_time)
                       : "Sin asistencias"}
                   </p>
                 </div>
