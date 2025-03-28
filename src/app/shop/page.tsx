@@ -1,12 +1,13 @@
-'use client';
+//OlimpoWEB-Frontend/src/app/shop/page.tsx
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import BackgroundLogo from '@/components/BackgroundLogo';
-import toast from 'react-hot-toast';
-import { apiService } from '@/services/api.service';
-import { useCart } from '@/contexts/CartContext';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import BackgroundLogo from "@/components/BackgroundLogo";
+import toast from "react-hot-toast";
+import { apiService } from "@/services/api.service";
+import { useCart } from "@/contexts/CartContext";
 
 interface Product {
   id: string;
@@ -25,152 +26,68 @@ const ShopPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState("all");
   const [categories, setCategories] = useState<string[]>([]);
   const { addItem } = useCart();
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
 
   // Función para obtener los productos
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      
-      // Simulamos datos para la demostración
-      const mockProducts: Product[] = [
-        {
-          id: '1',
-          name: 'Proteína Whey 1kg',
-          description: 'Proteína de suero de leche de alta calidad para optimizar la recuperación muscular.',
-          price: 15000,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Suplementos',
-          stock: 25,
-          available: true,
-          featured: true
-        },
-        {
-          id: '2',
-          name: 'Guantes de Kickboxing',
-          description: 'Guantes profesionales para entrenamiento de kickboxing con protección extra para las muñecas.',
-          price: 12000,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Equipamiento',
-          stock: 15,
-          available: true
-        },
-        {
-          id: '3',
-          name: 'Shaker 600ml',
-          description: 'Botella mezcladora para preparar batidos de proteínas y suplementos.',
-          price: 3500,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Accesorios',
-          stock: 50,
-          available: true
-        },
-        {
-          id: '4',
-          name: 'Creatina Monohidrato 300g',
-          description: 'Suplemento para aumentar la fuerza y el rendimiento durante entrenamientos intensos.',
-          price: 8000,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Suplementos',
-          stock: 0,
-          available: false
-        },
-        {
-          id: '5',
-          name: 'Cinturón de levantamiento',
-          description: 'Cinturón de cuero para soporte lumbar durante levantamientos pesados.',
-          price: 9500,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Equipamiento',
-          stock: 10,
-          available: true,
-          featured: true
-        },
-        {
-          id: '6',
-          name: 'Camiseta Olimpo Gym',
-          description: 'Camiseta oficial del gimnasio, material transpirable y cómodo para entrenar.',
-          price: 5000,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Indumentaria',
-          stock: 30,
-          available: true
-        },
-        {
-          id: '7',
-          name: 'Pre-Entrenamiento 300g',
-          description: 'Fórmula avanzada para maximizar tu energía y rendimiento durante el entrenamiento.',
-          price: 12500,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Suplementos',
-          stock: 15,
-          available: true
-        },
-        {
-          id: '8',
-          name: 'Banda de Resistencia Set x3',
-          description: 'Set de bandas elásticas de resistencia para entrenamiento en casa o en el gimnasio.',
-          price: 6500,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Accesorios',
-          stock: 20,
-          available: true
-        }
-      ];
-      
+
+      // Obtener productos de la API
+      const response = await apiService.get('/products');
+      const productData = response.data;
+
       // Filtrar solo productos disponibles para la tienda
-      const availableProducts = mockProducts.filter(product => product.available);
-      
+      const availableProducts = productData.filter((product) => product.available);
+
       // Extraer categorías únicas de los productos
       const uniqueCategories: string[] = Array.from(
-        new Set(availableProducts.map(product => product.category))
+        new Set(availableProducts.map((product) => product.category))
       );
-      
+
       setCategories(uniqueCategories);
-      
-      // Simular un retraso en la carga
-      setTimeout(() => {
-        setProducts(availableProducts);
-        setFilteredProducts(availableProducts);
-        setLoading(false);
-      }, 500);
+      setProducts(availableProducts);
+      setFilteredProducts(availableProducts);
+      setLoading(false);
     } catch (error) {
-      console.error('Error al cargar los productos:', error);
-      toast.error('No se pudieron cargar los productos');
+      console.error("Error al cargar los productos:", error);
+      toast.error("No se pudieron cargar los productos");
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchProducts();
+  }, []);  // Esto sigue generando una advertencia, pero lo resolveremos después
+
   // Filtrar productos por categoría
   const filterByCategory = (category: string) => {
     setActiveCategory(category);
-    
-    if (category === 'all') {
+
+    if (category === "all") {
       setFilteredProducts(products);
     } else {
-      const filtered = products.filter(product => product.category === category);
+      const filtered = products.filter(
+        (product) => product.category === category
+      );
       setFilteredProducts(filtered);
     }
   };
 
   const handleViewAllProducts = () => {
     // Recargar la página de la tienda o aplicar filtros
-    filterByCategory('all');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    filterByCategory("all");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Formatear precio
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 0
+    return new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
+      minimumFractionDigits: 0,
     }).format(price);
   };
 
@@ -183,25 +100,30 @@ const ShopPage = () => {
             Nuestra Tienda
           </h1>
           <p className="mt-4 text-lg text-gray-500">
-            Descubre nuestros productos de alta calidad para mejorar tu experiencia fitness.
+            Descubre nuestros productos de alta calidad para mejorar tu
+            experiencia fitness.
           </p>
         </div>
 
         {/* Filtros de categorías */}
         <div className="mt-8 flex flex-wrap justify-center gap-2">
-          <button 
+          <button
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              activeCategory === 'all' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              activeCategory === "all"
+                ? "bg-gray-900 text-white"
+                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
             }`}
-            onClick={() => filterByCategory('all')}
+            onClick={() => filterByCategory("all")}
           >
             Todos
           </button>
-          {categories.map(category => (
-            <button 
+          {categories.map((category) => (
+            <button
               key={category}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeCategory === category ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                activeCategory === category
+                  ? "bg-gray-900 text-white"
+                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
               }`}
               onClick={() => filterByCategory(category)}
             >
@@ -218,17 +140,22 @@ const ShopPage = () => {
           <>
             {filteredProducts.length > 0 ? (
               <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {filteredProducts.map(product => (
-                  <div key={product.id} className="bg-gray-50 rounded-lg shadow-md overflow-hidden transition-transform hover:scale-[1.02]">
-                    <div 
+                {filteredProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="bg-gray-50 rounded-lg shadow-md overflow-hidden transition-transform hover:scale-[1.02]"
+                  >
+                    <div
                       className="h-64 bg-gray-200 flex items-center justify-center relative cursor-pointer"
                       onClick={() => router.push(`/shop/product/${product.id}`)}
                     >
                       {product.image_url ? (
-                        <img 
-                          src={product.image_url} 
-                          alt={product.name} 
+                        <Image
+                          src={product.image_url}
+                          alt={product.name}
                           className="object-cover w-full h-full"
+                          width={500}
+                          height={500}
                         />
                       ) : (
                         <p className="text-gray-500">Imagen no disponible</p>
@@ -240,14 +167,18 @@ const ShopPage = () => {
                       )}
                       {product.stock === 0 && (
                         <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-                          <span className="text-white font-bold text-lg">AGOTADO</span>
+                          <span className="text-white font-bold text-lg">
+                            AGOTADO
+                          </span>
                         </div>
                       )}
                     </div>
                     <div className="p-6">
-                      <h3 
+                      <h3
                         className="text-xl font-semibold text-gray-900 mb-2 cursor-pointer hover:text-blue-600"
-                        onClick={() => router.push(`/shop/product/${product.id}`)}
+                        onClick={() =>
+                          router.push(`/shop/product/${product.id}`)
+                        }
                       >
                         {product.name}
                       </h3>
@@ -258,24 +189,27 @@ const ShopPage = () => {
                         <span className="text-xl font-bold text-gray-900">
                           {formatPrice(product.price)}
                         </span>
-                        <button 
+                        <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            addItem({
-                              id: product.id,
-                              name: product.name,
-                              price: product.price,
-                              image_url: product.image_url
-                            }, 1);
+                            addItem(
+                              {
+                                id: product.id,
+                                name: product.name,
+                                price: product.price,
+                                image_url: product.image_url,
+                              },
+                              1
+                            );
                           }}
                           disabled={!product.available}
                           className={`px-3 py-2 rounded-md text-sm font-medium ${
-                            product.available 
-                              ? 'bg-gray-900 text-white hover:bg-gray-800' 
-                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            product.available
+                              ? "bg-gray-900 text-white hover:bg-gray-800"
+                              : "bg-gray-300 text-gray-500 cursor-not-allowed"
                           }`}
                         >
-                          {product.available ? 'Añadir al carrito' : 'Agotado'}
+                          {product.available ? "Añadir al carrito" : "Agotado"}
                         </button>
                       </div>
                     </div>
@@ -284,14 +218,16 @@ const ShopPage = () => {
               </div>
             ) : (
               <div className="mt-12 text-center py-12 bg-gray-50 rounded-lg">
-                <p className="text-lg text-gray-600">No se encontraron productos en esta categoría.</p>
+                <p className="text-lg text-gray-600">
+                  No se encontraron productos en esta categoría.
+                </p>
               </div>
             )}
           </>
         )}
 
         <div className="mt-12 text-center">
-          <button 
+          <button
             onClick={handleViewAllProducts}
             className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
           >
@@ -304,24 +240,58 @@ const ShopPage = () => {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900">Próximamente</h2>
             <p className="mt-4 text-gray-600">
-              Estamos trabajando en ampliar nuestra tienda con más productos y funcionalidades:
+              Estamos trabajando en ampliar nuestra tienda con más productos y
+              funcionalidades:
             </p>
             <ul className="mt-6 space-y-4 text-left max-w-md mx-auto">
               <li className="flex items-start">
-                <svg className="h-6 w-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                <svg
+                  className="h-6 w-6 text-green-500 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
                 </svg>
                 Pasarela de pagos online
               </li>
               <li className="flex items-start">
-                <svg className="h-6 w-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                <svg
+                  className="h-6 w-6 text-green-500 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
                 </svg>
                 Seguimiento de pedidos
               </li>
               <li className="flex items-start">
-                <svg className="h-6 w-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                <svg
+                  className="h-6 w-6 text-green-500 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
                 </svg>
                 Reseñas de productos
               </li>

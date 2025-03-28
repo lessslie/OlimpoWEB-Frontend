@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import BackgroundLogo from "@/components/BackgroundLogo";
 import { apiService } from "@/services/api.service";
 import { toast } from "react-hot-toast";
@@ -48,121 +49,13 @@ const ProductDetailPage = ({ params }: PageProps) => {
       setLoading(true);
 
       // En un entorno real, esto sería una llamada a la API
-      // const response = await apiService.get(`/products/${id}`);
-      // const productData = response.data;
+      const response = await apiService.get(`/products/${id}`);
+      const productData = response.data;
 
-      // Simulamos datos para la demostración
-      const mockProducts: Product[] = [
-        {
-          id: "1",
-          name: "Proteína Whey 1kg",
-          description:
-            "Proteína de suero de leche de alta calidad para optimizar la recuperación muscular. Ideal para deportistas que buscan aumentar su masa muscular y mejorar la recuperación después del entrenamiento. Contiene 25g de proteína por porción y tiene un delicioso sabor a chocolate.",
-          price: 15000,
-          image_url: "https://via.placeholder.com/500",
-          category: "Suplementos",
-          stock: 25,
-          available: true,
-          featured: true,
-          created_at: "2023-01-15T10:30:00Z",
-          updated_at: "2023-01-15T10:30:00Z",
-        },
-        {
-          id: "2",
-          name: "Guantes de Kickboxing",
-          description:
-            "Guantes profesionales para entrenamiento de kickboxing con protección extra para las muñecas. Fabricados con materiales de alta calidad que garantizan durabilidad y comodidad durante el entrenamiento. Disponibles en color negro con detalles en rojo.",
-          price: 12000,
-          image_url: "https://via.placeholder.com/500",
-          category: "Equipamiento",
-          stock: 15,
-          available: true,
-          created_at: "2023-02-20T14:15:00Z",
-          updated_at: "2023-02-20T14:15:00Z",
-        },
-        {
-          id: "3",
-          name: "Shaker 600ml",
-          description:
-            "Botella mezcladora para preparar batidos de proteínas y suplementos. Incluye una bola mezcladora que garantiza batidos sin grumos. Fabricado con materiales libres de BPA y apto para lavavajillas.",
-          price: 3500,
-          image_url: "https://via.placeholder.com/500",
-          category: "Accesorios",
-          stock: 50,
-          available: true,
-          created_at: "2023-03-10T09:45:00Z",
-          updated_at: "2023-03-10T09:45:00Z",
-        },
-        {
-          id: "4",
-          name: "Creatina Monohidrato 300g",
-          description:
-            "Suplemento para aumentar la fuerza y el rendimiento durante entrenamientos intensos. La creatina es uno de los suplementos más estudiados y efectivos para mejorar el rendimiento en entrenamientos de alta intensidad y corta duración.",
-          price: 8000,
-          image_url: "https://via.placeholder.com/500",
-          category: "Suplementos",
-          stock: 0,
-          available: false,
-          created_at: "2023-04-05T16:20:00Z",
-          updated_at: "2023-04-05T16:20:00Z",
-        },
-        {
-          id: "5",
-          name: "Cinturón de levantamiento",
-          description:
-            "Cinturón de cuero para soporte lumbar durante levantamientos pesados. Proporciona estabilidad y protección para la zona lumbar durante ejercicios como sentadillas y peso muerto. Fabricado con cuero de alta calidad y hebilla de acero resistente.",
-          price: 9500,
-          image_url: "https://via.placeholder.com/500",
-          category: "Equipamiento",
-          stock: 10,
-          available: true,
-          featured: true,
-          created_at: "2023-05-12T11:30:00Z",
-          updated_at: "2023-05-12T11:30:00Z",
-        },
-        {
-          id: "6",
-          name: "Camiseta Olimpo Gym",
-          description:
-            "Camiseta oficial del gimnasio, material transpirable y cómodo para entrenar. Diseñada con tela de secado rápido que mantiene tu cuerpo fresco durante el entrenamiento. Disponible en varios colores y tallas.",
-          price: 5000,
-          image_url: "https://via.placeholder.com/500",
-          category: "Indumentaria",
-          stock: 30,
-          available: true,
-          created_at: "2023-06-18T08:25:00Z",
-          updated_at: "2023-06-18T08:25:00Z",
-        },
-        {
-          id: "7",
-          name: "Pre-Entrenamiento 300g",
-          description:
-            "Fórmula avanzada para maximizar tu energía y rendimiento durante el entrenamiento. Contiene cafeína, beta-alanina, creatina y otros ingredientes que aumentan la energía, la concentración y el bombeo muscular durante tus sesiones de entrenamiento.",
-          price: 12500,
-          image_url: "https://via.placeholder.com/500",
-          category: "Suplementos",
-          stock: 15,
-          available: true,
-          created_at: "2023-07-22T13:40:00Z",
-          updated_at: "2023-07-22T13:40:00Z",
-        },
-        {
-          id: "8",
-          name: "Banda de Resistencia Set x3",
-          description:
-            "Set de bandas elásticas de resistencia para entrenamiento en casa o en el gimnasio. Incluye tres bandas de diferentes resistencias (ligera, media y fuerte) para adaptar tus ejercicios a diferentes niveles de intensidad. Perfectas para entrenamiento de fuerza, rehabilitación y estiramientos.",
-          price: 6500,
-          image_url: "https://via.placeholder.com/500",
-          category: "Accesorios",
-          stock: 20,
-          available: true,
-          created_at: "2023-08-30T15:55:00Z",
-          updated_at: "2023-08-30T15:55:00Z",
-        },
-      ];
+
 
       // Buscar el producto por ID
-      const foundProduct = mockProducts.find((p) => p.id === id);
+      const foundProduct = productData.find((p) => p.id === id);
 
       if (foundProduct) {
         setProduct(foundProduct);
@@ -259,17 +152,18 @@ const ProductDetailPage = ({ params }: PageProps) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Imagen del producto */}
           <div className="bg-gray-100 rounded-lg overflow-hidden">
-            {product.image_url ? (
-              <img
-                src={product.image_url}
+              <Image
+                src={product.image_url || "/placeholder-image.png"}
                 alt={product.name}
+                width={500}
+                height={500}
                 className="w-full h-auto object-cover"
               />
-            ) : (
+            : (
               <div className="h-96 flex items-center justify-center">
                 <p className="text-gray-500">Imagen no disponible</p>
               </div>
-            )}
+            )
           </div>
 
           {/* Detalles del producto */}

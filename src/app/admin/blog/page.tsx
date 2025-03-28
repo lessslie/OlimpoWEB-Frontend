@@ -1,3 +1,4 @@
+//OlimpoWEB-Frontend/src/app/admin/blog/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import BackgroundLogo from '@/components/BackgroundLogo';
 import { apiService } from '@/services/api.service';
 import { toast } from 'react-hot-toast';
-import Link from 'next/link';
+
 
 // Interfaces
 interface BlogPost {
@@ -53,80 +54,17 @@ const AdminBlogPage = () => {
     try {
       setLoadingPosts(true);
       // En un entorno real, esto sería una llamada a la API
-      // const response = await apiService.get('/blog/posts');
-      // const data = response.data;
-      
-      // Simulamos datos para la demostración
-      const mockPosts: BlogPost[] = [
-        {
-          id: '1',
-          title: 'Los beneficios del entrenamiento de fuerza',
-          content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-          image_url: 'https://via.placeholder.com/800x400',
-          category: 'Musculación',
-          author_id: '1',
-          author_name: 'Juan Pérez',
-          published: true,
-          created_at: '2023-01-15T10:30:00Z',
-          updated_at: '2023-01-15T10:30:00Z',
-          excerpt: 'Descubre cómo el entrenamiento de fuerza puede transformar tu cuerpo y mejorar tu salud.',
-          slug: 'beneficios-entrenamiento-fuerza',
-          tags: ['musculación', 'entrenamiento', 'salud']
-        },
-        {
-          id: '2',
-          title: 'Guía para principiantes de Kickboxing',
-          content: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-          image_url: 'https://via.placeholder.com/800x400',
-          category: 'Kickboxing',
-          author_id: '2',
-          author_name: 'María González',
-          published: true,
-          created_at: '2023-02-20T14:15:00Z',
-          updated_at: '2023-02-20T14:15:00Z',
-          excerpt: 'Todo lo que necesitas saber para comenzar en el mundo del kickboxing.',
-          slug: 'guia-principiantes-kickboxing',
-          tags: ['kickboxing', 'principiantes', 'artes marciales']
-        },
-        {
-          id: '3',
-          title: 'Nutrición para deportistas: qué comer antes y después del entrenamiento',
-          content: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-          image_url: 'https://via.placeholder.com/800x400',
-          category: 'Nutrición',
-          author_id: '1',
-          author_name: 'Juan Pérez',
-          published: true,
-          created_at: '2023-03-10T09:45:00Z',
-          updated_at: '2023-03-10T09:45:00Z',
-          excerpt: 'Aprende a optimizar tu alimentación para maximizar tus resultados en el gimnasio.',
-          slug: 'nutricion-deportistas',
-          tags: ['nutrición', 'alimentación', 'rendimiento']
-        },
-        {
-          id: '4',
-          title: 'Próximos eventos y competiciones',
-          content: 'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-          image_url: 'https://via.placeholder.com/800x400',
-          category: 'Eventos',
-          author_id: '3',
-          author_name: 'Carlos Rodríguez',
-          published: false,
-          created_at: '2023-04-05T16:20:00Z',
-          updated_at: '2023-04-05T16:20:00Z',
-          excerpt: 'Calendario de eventos y competiciones para los próximos meses.',
-          slug: 'proximos-eventos-competiciones',
-          tags: ['eventos', 'competiciones', 'calendario']
-        }
-      ];
+      const response = await apiService.get('/blog/posts');
+      const data = response.data;
+     
       
       // Extraer categorías únicas de los posts
-      const uniqueCategories = Array.from(new Set(mockPosts.map(post => post.category)));
+      const uniqueCategories = Array.from(new Set(blogPosts.map(post => post.category)));
       setCategories(uniqueCategories);
       
       // Simular un retraso en la carga
       setTimeout(() => {
-        setBlogPosts(mockPosts);
+        setBlogPosts(blogPosts);
         setLoadingPosts(false);
       }, 500);
     } catch (error) {
@@ -141,7 +79,7 @@ const AdminBlogPage = () => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este post? Esta acción no se puede deshacer.')) {
       try {
         // En un entorno real, esto sería una llamada a la API
-        // await apiService.delete(`/blog/posts/${id}`);
+        await apiService.delete(`/blog/posts/${id}`);
         
         // Simulamos la eliminación
         setBlogPosts(prevPosts => prevPosts.filter(post => post.id !== id));
@@ -157,7 +95,7 @@ const AdminBlogPage = () => {
   const togglePublishStatus = async (id: string, currentStatus: boolean) => {
     try {
       // En un entorno real, esto sería una llamada a la API
-      // await apiService.patch(`/blog/posts/${id}`, { published: !currentStatus });
+      await apiService.patch(`/blog/posts/${id}`, { published: !currentStatus });
       
       // Simulamos el cambio de estado
       setBlogPosts(prevPosts => 

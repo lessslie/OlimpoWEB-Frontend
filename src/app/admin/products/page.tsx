@@ -51,82 +51,15 @@ const AdminProductsPage = () => {
     try {
       setLoadingProducts(true);
       // En un entorno real, esto sería una llamada a la API
-      // const response = await apiService.get('/products');
-      // const data = response.data;
-      
-      // Simulamos datos para la demostración
-      const mockProducts: Product[] = [
-        {
-          id: '1',
-          name: 'Proteína Whey 1kg',
-          description: 'Proteína de suero de leche de alta calidad para optimizar la recuperación muscular.',
-          price: 15000,
-          image_url: 'https://via.placeholder.com/150',
-          category: 'Suplementos',
-          stock: 25,
-          available: true,
-          created_at: '2023-01-15T10:30:00Z',
-          updated_at: '2023-01-15T10:30:00Z',
-          featured: true
-        },
-        {
-          id: '2',
-          name: 'Guantes de Kickboxing',
-          description: 'Guantes profesionales para entrenamiento de kickboxing con protección extra para las muñecas.',
-          price: 12000,
-          image_url: 'https://via.placeholder.com/150',
-          category: 'Equipamiento',
-          stock: 15,
-          available: true,
-          created_at: '2023-02-20T14:15:00Z',
-          updated_at: '2023-02-20T14:15:00Z'
-        },
-        {
-          id: '3',
-          name: 'Shaker 600ml',
-          description: 'Botella mezcladora para preparar batidos de proteínas y suplementos.',
-          price: 3500,
-          image_url: 'https://via.placeholder.com/150',
-          category: 'Accesorios',
-          stock: 50,
-          available: true,
-          created_at: '2023-03-10T09:45:00Z',
-          updated_at: '2023-03-10T09:45:00Z'
-        },
-        {
-          id: '4',
-          name: 'Creatina Monohidrato 300g',
-          description: 'Suplemento para aumentar la fuerza y el rendimiento durante entrenamientos intensos.',
-          price: 8000,
-          image_url: 'https://via.placeholder.com/150',
-          category: 'Suplementos',
-          stock: 0,
-          available: false,
-          created_at: '2023-04-05T16:20:00Z',
-          updated_at: '2023-04-05T16:20:00Z'
-        },
-        {
-          id: '5',
-          name: 'Cinturón de levantamiento',
-          description: 'Cinturón de cuero para soporte lumbar durante levantamientos pesados.',
-          price: 9500,
-          image_url: 'https://via.placeholder.com/150',
-          category: 'Equipamiento',
-          stock: 10,
-          available: true,
-          created_at: '2023-05-12T11:30:00Z',
-          updated_at: '2023-05-12T11:30:00Z',
-          featured: true
-        }
-      ];
-      
+      const response = await apiService.get('/products');
+      const data = response.data;
       // Extraer categorías únicas de los productos
-      const uniqueCategories = Array.from(new Set(mockProducts.map(product => product.category)));
+      const uniqueCategories = Array.from(new Set(products.map(product => product.category)));
       setCategories(uniqueCategories);
       
       // Simular un retraso en la carga
       setTimeout(() => {
-        setProducts(mockProducts);
+        setProducts(products);
         setLoadingProducts(false);
       }, 500);
     } catch (error) {
@@ -141,7 +74,7 @@ const AdminProductsPage = () => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.')) {
       try {
         // En un entorno real, esto sería una llamada a la API
-        // await apiService.delete(`/products/${id}`);
+        await apiService.delete(`/products/${id}`);
         
         // Simulamos la eliminación
         setProducts(prevProducts => prevProducts.filter(product => product.id !== id));
@@ -157,7 +90,7 @@ const AdminProductsPage = () => {
   const toggleAvailability = async (id: string, currentStatus: boolean) => {
     try {
       // En un entorno real, esto sería una llamada a la API
-      // await apiService.patch(`/products/${id}`, { available: !currentStatus });
+      await apiService.patch(`/products/${id}`, { available: !currentStatus });
       
       // Simulamos el cambio de estado
       setProducts(prevProducts => 

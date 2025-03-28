@@ -40,13 +40,17 @@ interface Attendance {
 }
 
 const UserDetailPage = ({ params }: { params: { id: string } }) => {
+  // Extraer el ID al inicio para evitar referencias directas
+  const userId = params.id;
   const { user, isAdmin, loading, token } = useAuth();
   const router = useRouter();
   const [userData, setUserData] = useState<User | null>(null);
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"profile" | "memberships" | "attendance" | "routine">("profile");
+  const [activeTab, setActiveTab] = useState<
+    "profile" | "memberships" | "attendance" | "routine"
+  >("profile");
   const [showEditModal, setShowEditModal] = useState(false);
   const [editedUser, setEditedUser] = useState<Partial<User> | null>(null);
   const [showAllAttendances, setShowAllAttendances] = useState(false);
@@ -81,8 +85,10 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
   const [adminActiveDay, setAdminActiveDay] = useState("");
 
   // Función para obtener datos del usuario
+  // Función para obtener datos del usuario
   const fetchUserData = useCallback(async () => {
-    if (!token || !params.id) {
+    if (!token || !userId) {
+      console.log("No hay token o ID de usuario para obtener datos");
       console.error("No hay token o ID de usuario para obtener datos");
       return;
     }
@@ -93,9 +99,9 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005/api";
       console.log(
         "Obteniendo datos del usuario:",
-        `${baseUrl}/users/${params.id}`
+        `${baseUrl}/users/${userId}`
       );
-      const response = await fetch(`${baseUrl}/users/${params.id}`, {
+      const response = await fetch(`${baseUrl}/users/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -116,6 +122,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       console.log("Datos del usuario recibidos:", data);
 
       if (!data || !data.id) {
+        console.log("Datos de usuario inválidos o vacíos:", data);
         console.error("Datos de usuario inválidos o vacíos:", data);
         toast.error("No se pudieron cargar los datos del usuario");
         setIsLoading(false);
@@ -125,20 +132,64 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       // Actualiza el estado con los datos recibidos
       setUserData(data);
       setEditedUser(data);
-      setHasRoutine(data.has_routine || false);
-      setRoutineText(data.routine || "");
+      console.log("Datos del usuario establecidos:", data);
+
+      // Ahora obtenemos la rutina por separado
+      try {
+        const routineResponse = await fetch(
+          `${baseUrl}/users/${userId}/routine`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log(
+          "Obteniendo rutina del usuario:",
+          `${baseUrl}/users/${userId}/routine`
+        );
+
+        if (routineResponse.ok) {
+          const routineData = await routineResponse.json();
+          console.log("Rutina recibida:", routineData);
+
+          // La rutina viene directamente en la respuesta ahora
+          setHasRoutine(true);
+          setRoutineText(JSON.stringify(routineData.content, null, 2));
+          console.log("Rutina establecida:", routineData.content);
+
+          // También actualizamos userData con la información de la rutina
+          setUserData((prevUserData) => {
+            if (!prevUserData) return null;
+            return {
+              ...prevUserData,
+              has_routine: true,
+              routine: routineData.content,
+            } as User;
+          });
+        } else {
+          // Si no hay rutina o hubo un error, establecemos que no hay rutina
+          setHasRoutine(false);
+          setRoutineText("[]");
+        }
+      } catch (error) {
+        console.error("Error al cargar la rutina:", error);
+        setHasRoutine(false);
+        setRoutineText("[]");
+      }
+
       setIsLoading(false);
     } catch (error) {
       console.error("Error al cargar los datos del usuario:", error);
       toast.error("Error al cargar los datos del usuario");
       setIsLoading(false);
     }
-  }, [token, params.id]);
+  }, [token, userId]);
 
   // Función para obtener membresías del usuario
   const fetchMemberships = useCallback(async () => {
-    if (!token || !params.id) {
-      console.error("No hay token o ID de usuario para obtener membresías");
+    if (!token || !userId) {
+      console.error("No hay token o ID de usuario para obtener asistencias");
       return;
     }
 
@@ -147,9 +198,9 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005/api";
       console.log(
         "Obteniendo membresías del usuario:",
-        `${baseUrl}/memberships/user/${params.id}`
+        `${baseUrl}/memberships/user/${userId}`
       );
-      const response = await fetch(`${baseUrl}/memberships/user/${params.id}`, {
+      const response = await fetch(`${baseUrl}/memberships/user/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -173,11 +224,11 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       console.error("Error al cargar las membresías:", error);
       toast.error("Error al cargar las membresías");
     }
-  }, [token, params.id]);
+  }, [token, userId]);
 
   // Función para obtener asistencias del usuario
   const fetchAttendances = useCallback(async () => {
-    if (!token || !params.id) {
+    if (!token || !userId) {
       console.error("No hay token o ID de usuario para obtener asistencias");
       return;
     }
@@ -187,9 +238,9 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005/api";
       console.log(
         "Obteniendo asistencias del usuario:",
-        `${baseUrl}/attendance/user/${params.id}`
+        `${baseUrl}/attendance/user/${userId}`
       );
-      const response = await fetch(`${baseUrl}/attendance/user/${params.id}`, {
+      const response = await fetch(`${baseUrl}/attendance/user/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -220,7 +271,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       console.error("Error al cargar las asistencias:", error);
       toast.error("Error al cargar las asistencias");
     }
-  }, [token, params.id]);
+  }, [token, userId]);
 
   // Verificar si el usuario está autenticado y es administrador
   useEffect(() => {
@@ -248,8 +299,8 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       console.log("Usuario autenticado y es admin, puede ver la página");
 
       // Si el usuario está autenticado y es admin, cargamos los datos
-      if (params.id) {
-        console.log("Iniciando carga de datos del usuario con ID:", params.id);
+      if (userId) {
+        console.log("Iniciando carga de datos del usuario con ID:", userId);
         fetchUserData();
         fetchMemberships();
         fetchAttendances();
@@ -262,7 +313,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
     user,
     isAdmin,
     loading,
-    params.id,
+    userId,
     router,
     fetchUserData,
     fetchMemberships,
@@ -277,7 +328,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
     try {
       const baseUrl =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005/api";
-      const response = await fetch(`${baseUrl}/users/${params.id}`, {
+      const response = await fetch(`${baseUrl}/users/${userId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -351,6 +402,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
   };
 
   // Función para guardar la rutina del usuario
+  // Función para guardar la rutina del usuario
   const saveRoutine = async () => {
     if (!userData) return;
 
@@ -358,30 +410,35 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
     try {
       const baseUrl =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005/api";
-      const response = await fetch(`${baseUrl}/users/${params.id}/routine`, {
+
+      console.log("Guardando rutina con datos:", routineText);
+
+      const response = await fetch(`${baseUrl}/users/${userId}/routine`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          routine: JSON.parse(routineText),
-          has_routine: true,
+          content: JSON.parse(routineText),
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Error al asignar la rutina");
+        const errorData = await response.json();
+        console.error("Error en la respuesta:", response.status, errorData);
+        throw new Error(`Error al asignar la rutina: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log("Rutina guardada correctamente:", data);
 
       // Actualiza el estado con los datos actualizados
       setUserData({
-        ...userData,
+        ...userData!,
         has_routine: true,
-        routine: JSON.parse(routineText),
-      });
+        routine: data.content,
+      } as User);
       setHasRoutine(true);
       setShowRoutineModal(false);
       toast.success("Rutina asignada correctamente");
@@ -394,6 +451,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
   };
 
   // Función para eliminar la rutina del usuario
+
   const deleteRoutine = async () => {
     if (!userData) return;
 
@@ -401,7 +459,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
     try {
       const baseUrl =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005/api";
-      const response = await fetch(`${baseUrl}/users/${params.id}/routine`, {
+      const response = await fetch(`${baseUrl}/users/${userId}/routine`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -409,17 +467,22 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       });
 
       if (!response.ok) {
-        throw new Error("Error al eliminar la rutina");
+        const errorData = await response.json();
+        console.error("Error en la respuesta:", response.status, errorData);
+        throw new Error(`Error al eliminar la rutina: ${response.status}`);
       }
+
+      const data = await response.json();
+      console.log("Rutina eliminada correctamente:", data);
 
       // Actualiza el estado después de eliminar la rutina
       setUserData({
-        ...userData,
+        ...userData!,
         has_routine: false,
         routine: null,
-      });
+      } as User);
       setHasRoutine(false);
-      setRoutineText("");
+      setRoutineText("[]");
       toast.success("Rutina eliminada correctamente");
       setIsLoading(false);
     } catch (error) {
@@ -428,19 +491,26 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       setIsLoading(false);
     }
   };
+
   // Función para inicializar la edición de rutina
   const initRoutineEdit = () => {
     setShowRoutineModal(true);
     try {
       if (userData?.routine) {
-        const routineData =
-          typeof userData.routine === "string"
-            ? JSON.parse(userData.routine)
-            : userData.routine;
+        let routineData;
 
+        // La rutina puede venir como string o como objeto
+        if (typeof userData.routine === "string") {
+          routineData = JSON.parse(userData.routine);
+        } else {
+          routineData = userData.routine;
+        }
+
+        // Asegurarse de que routineData es un array
         setRoutineExercises(Array.isArray(routineData) ? routineData : []);
         setRoutineText(JSON.stringify(routineData, null, 2));
       } else {
+        // Si no hay rutina, inicializar con un array vacío
         setRoutineExercises([]);
         setRoutineText("[]");
       }
@@ -451,7 +521,6 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
       setRoutineText("[]");
     }
   };
-
   // Función para agregar o actualizar un ejercicio
   const saveExercise = () => {
     if (
@@ -484,7 +553,6 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
     setRoutineText(JSON.stringify(updatedExercises, null, 2));
     resetExerciseForm();
   };
-
   // Función para editar un ejercicio existente
   const editExercise = (exercise: any) => {
     setCurrentExercise(exercise);
@@ -750,7 +818,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
               <h3 className="text-lg font-medium text-gray-900">Membresías</h3>
               <button
                 onClick={() =>
-                  router.push(`/admin/memberships/new?userId=${params.id}`)
+                  router.push(`/admin/memberships/new?userId=${userId}`)
                 }
                 className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
               >
@@ -1086,8 +1154,7 @@ const UserDetailPage = ({ params }: { params: { id: string } }) => {
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h4 className="text-md font-medium">Rutina actual:</h4>
                 <div className="bg-white p-4 rounded border border-gray-200 whitespace-pre-wrap">
-                  {JSON.stringify(userData?.routine, null, 2) ||
-                    "No hay información disponible."}
+                  {routineText || "No hay información disponible."}
                 </div>
                 <div className="mt-4 text-sm text-gray-600">
                   <p>

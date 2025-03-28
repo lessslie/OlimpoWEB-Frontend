@@ -1,3 +1,4 @@
+//OlimpoWEB-Frontend/src/contexts/AuthContext.tsx
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
@@ -54,6 +55,15 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "https://olimpoweb-backend.onrender.com/api";
 console.log("URL de la API en AuthContext:", API_URL);
+console.log(
+  "Todas las variables de entorno de NEXT_PUBLIC:",
+  Object.keys(process.env)
+    .filter((key) => key.startsWith("NEXT_PUBLIC_"))
+    .reduce((obj, key) => {
+      obj[key] = process.env[key];
+      return obj;
+    }, {})
+);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -119,7 +129,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.error("Error al verificar sesión:", error);
 
           // Solo cerrar sesión si es un error de autenticación
-          if (axios.isAxiosError(error) && error.response && error.response.status === 401) {
+          if (
+            axios.isAxiosError(error) &&
+            error.response &&
+            error.response.status === 401
+          ) {
             console.log("Error de autenticación, cerrando sesión...");
             localStorage.removeItem("token");
             setUser(null);
@@ -139,7 +153,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsAdmin(false);
       setIsAuthenticated(false);
       setToken(null);
-  
     } finally {
       setLoading(false);
     }
@@ -148,6 +161,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (email: string, password: string) => {
     try {
       setLoading(true);
+      console.log("Intentando iniciar sesión con:", email);
+      console.log("URL a la que se enviará la petición:", `${API_URL}/auth/login`);
       console.log("Intentando iniciar sesión con:", email);
 
       // Hacer petición al endpoint login

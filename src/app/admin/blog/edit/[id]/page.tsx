@@ -98,84 +98,13 @@ const EditBlogPostPage = ({ params }: PageProps) => {
       setIsLoading(true);
 
       // En un entorno real, esto sería una llamada a la API
-      // const response = await apiService.get(`/blog/posts/${id}`);
-      // const postData = response.data;
+      const response = await apiService.get(`/blog/posts/${id}`);
+      const postData = response.data;
 
-      // Simulamos datos para la demostración
-      const mockPosts: BlogPost[] = [
-        {
-          id: "1",
-          title: "Los beneficios del entrenamiento de fuerza",
-          content:
-            "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p><p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>",
-          image_url: "https://via.placeholder.com/800x400",
-          category: "Musculación",
-          author_id: "1",
-          author_name: "Juan Pérez",
-          published: true,
-          created_at: "2023-01-15T10:30:00Z",
-          updated_at: "2023-01-15T10:30:00Z",
-          excerpt:
-            "Descubre cómo el entrenamiento de fuerza puede transformar tu cuerpo y mejorar tu salud.",
-          slug: "beneficios-entrenamiento-fuerza",
-          tags: ["musculación", "entrenamiento", "salud"],
-        },
-        {
-          id: "2",
-          title: "Guía para principiantes de Kickboxing",
-          content:
-            "<p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p><h2>Técnicas básicas</h2><p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>",
-          image_url: "https://via.placeholder.com/800x400",
-          category: "Kickboxing",
-          author_id: "2",
-          author_name: "María González",
-          published: true,
-          created_at: "2023-02-20T14:15:00Z",
-          updated_at: "2023-02-20T14:15:00Z",
-          excerpt:
-            "Todo lo que necesitas saber para comenzar en el mundo del kickboxing.",
-          slug: "guia-principiantes-kickboxing",
-          tags: ["kickboxing", "principiantes", "artes marciales"],
-        },
-        {
-          id: "3",
-          title:
-            "Nutrición para deportistas: qué comer antes y después del entrenamiento",
-          content:
-            "<p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p><h3>Antes del entrenamiento</h3><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p><h3>Después del entrenamiento</h3><p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>",
-          image_url: "https://via.placeholder.com/800x400",
-          category: "Nutrición",
-          author_id: "1",
-          author_name: "Juan Pérez",
-          published: true,
-          created_at: "2023-03-10T09:45:00Z",
-          updated_at: "2023-03-10T09:45:00Z",
-          excerpt:
-            "Aprende a optimizar tu alimentación para maximizar tus resultados en el gimnasio.",
-          slug: "nutricion-deportistas",
-          tags: ["nutrición", "alimentación", "rendimiento"],
-        },
-        {
-          id: "4",
-          title: "Próximos eventos y competiciones",
-          content:
-            "<p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p><ul><li>Competición regional de kickboxing</li><li>Maratón benéfica</li><li>Seminario de nutrición deportiva</li></ul>",
-          image_url: "https://via.placeholder.com/800x400",
-          category: "Eventos",
-          author_id: "3",
-          author_name: "Carlos Rodríguez",
-          published: false,
-          created_at: "2023-04-05T16:20:00Z",
-          updated_at: "2023-04-05T16:20:00Z",
-          excerpt:
-            "Calendario de eventos y competiciones para los próximos meses.",
-          slug: "proximos-eventos-competiciones",
-          tags: ["eventos", "competiciones", "calendario"],
-        },
-      ];
+    
 
       // Buscar el post por ID
-      const post = mockPosts.find((post) => post.id === id);
+      const post = postData.find((post) => post.id === id);
 
       if (post) {
         setFormData({
@@ -260,7 +189,7 @@ const EditBlogPostPage = ({ params }: PageProps) => {
       };
 
       // En un entorno real, esto sería una llamada a la API
-      // await apiService.put(`/blog/posts/${id}`, postData);
+      await apiService.put(`/blog/posts/${id}`, postData);
 
       // Simulamos el guardado
       console.log("Actualizando post:", postData);
