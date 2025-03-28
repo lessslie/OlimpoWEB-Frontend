@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import BackgroundLogo from "@/components/BackgroundLogo";
 import { apiService } from "@/services/api.service";
 import { toast } from "react-hot-toast";
-import { use } from 'react';
+import React from 'react';
 
 // Categorías predefinidas
 const CATEGORIES = [
@@ -36,14 +36,16 @@ interface Product {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 const EditProductPage = ({ params }: PageProps) => {
-  const id = params.id;
+  // Usar React.use() para desenvolver la promesa de params
+  const resolvedParams = React.use(params);
+  const id = resolvedParams.id;
   const { user, isAdmin, loading } = useAuth();
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -78,33 +80,52 @@ const EditProductPage = ({ params }: PageProps) => {
     try {
       setIsLoading(true);
 
-      // En un entorno real, esto sería una llamada a la API
+      // Obtener el producto específico por su ID
       const response = await apiService.get(`/products/${id}`);
       const productData = response.data;
 
-    
+      // Verificar si productData es un objeto (producto único) o un array
+      if (Array.isArray(productData)) {
+        // Si es un array, buscar el producto por ID
+        const product = productData.find((product) => product.id === id);
+        
+        if (product) {
+          setFormData({
+            name: product.name,
+            description: product.description,
+            price: product.price.toString(),
+            image_url: product.image_url || product.image || "",
+            category: product.category || product.category_id || "",
+            stock: typeof product.stock === 'boolean' ? (product.stock ? "1" : "0") : product.stock.toString(),
+            available: product.available || (typeof product.stock === 'boolean' ? product.stock : product.stock > 0),
+            featured: product.featured || product.is_featured || false,
+          });
 
-      // Buscar el producto por ID
-      const product = productData.find((product) => product.id === id);
-
-      if (product) {
+          if (product.image_url || product.image) {
+            setImagePreview(product.image_url || product.image);
+          }
+        } else {
+          toast.error("Producto no encontrado");
+          router.push("/admin/products");
+        }
+      } else {
+        // Si es un objeto único (el producto directamente)
+        const product = productData;
+        
         setFormData({
           name: product.name,
           description: product.description,
           price: product.price.toString(),
-          image_url: product.image_url || "",
-          category: product.category,
-          stock: product.stock.toString(),
-          available: product.available,
-          featured: product.featured || false,
+          image_url: product.image_url || product.image || "",
+          category: product.category || product.category_id || "",
+          stock: typeof product.stock === 'boolean' ? (product.stock ? "1" : "0") : product.stock.toString(),
+          available: product.available || (typeof product.stock === 'boolean' ? product.stock : product.stock > 0),
+          featured: product.featured || product.is_featured || false,
         });
 
-        if (product.image_url) {
-          setImagePreview(product.image_url);
+        if (product.image_url || product.image) {
+          setImagePreview(product.image_url || product.image);
         }
-      } else {
-        toast.error("Producto no encontrado");
-        router.push("/admin/products");
       }
     } catch (error) {
       console.error("Error al cargar el producto:", error);
@@ -158,19 +179,22 @@ const EditProductPage = ({ params }: PageProps) => {
     setIsSaving(true);
 
     try {
-      // Preparar datos para enviar
+      // Preparar datos para enviar - adaptados al formato que espera el backend según UpdateProductDto
       const productData = {
-        ...formData,
+        name: formData.name,
+        description: formData.description,
         price: parseInt(formData.price, 10),
-        stock: parseInt(formData.stock, 10),
-        updated_at: new Date().toISOString(),
+        image: formData.image_url, // Backend espera 'image', no 'image_url'
+        category_id: formData.category, // Backend espera 'category_id', no 'category'
+        stock: formData.available, // Backend espera 'stock' como boolean
       };
 
-      // En un entorno real, esto sería una llamada a la API
-      // await apiService.put(`/products/${id}`, productData);
+      console.log("Enviando datos de producto:", productData);
+      console.log("URL de actualización:", `/products/${id}`);
 
-      // Usar apiService que ya debe tener configurado el token
-      await apiService.put(`/products/${id}`, productData);
+      // Realizar la petición PATCH al backend
+      const response = await apiService.patch(`/products/${id}`, productData);
+      console.log("Respuesta de actualización:", response.data);
 
       // Mostrar mensaje de éxito
       toast.success("Producto actualizado correctamente");

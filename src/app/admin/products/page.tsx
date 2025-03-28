@@ -15,12 +15,15 @@ interface Product {
   description: string;
   price: number;
   image_url?: string;
-  category: string;
-  stock: number;
-  available: boolean;
+  image?: string;
+  category_id?: string;  
+  category?: string;
+  stock: boolean | number;  
+  available?: boolean;
   created_at: string;
   updated_at: string;
   featured?: boolean;
+  is_featured?: boolean;  
 }
 
 const AdminProductsPage = () => {
@@ -50,18 +53,25 @@ const AdminProductsPage = () => {
   const fetchProducts = async () => {
     try {
       setLoadingProducts(true);
-      // En un entorno real, esto sería una llamada a la API
       const response = await apiService.get('/products');
       const data = response.data;
-      // Extraer categorías únicas de los productos
-      const uniqueCategories = Array.from(new Set(products.map(product => product.category)));
+      
+      // Adaptar los datos recibidos al formato esperado por el componente
+      const adaptedProducts = data.map((product: any) => ({
+        ...product,
+        category: product.category_id || 'Sin categoría',  
+        available: product.stock === true,  
+        featured: product.is_featured  
+      }));
+      
+      // Asignar los datos adaptados
+      setProducts(adaptedProducts);
+      
+      // Extraer categorías únicas de los productos después de asignarlos
+      const uniqueCategories = Array.from(new Set(adaptedProducts.map(product => product.category))) as string[];
       setCategories(uniqueCategories);
       
-      // Simular un retraso en la carga
-      setTimeout(() => {
-        setProducts(products);
-        setLoadingProducts(false);
-      }, 500);
+      setLoadingProducts(false);
     } catch (error) {
       console.error('Error al cargar los productos:', error);
       toast.error('No se pudieron cargar los productos');
@@ -73,10 +83,8 @@ const AdminProductsPage = () => {
   const deleteProduct = async (id: string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.')) {
       try {
-        // En un entorno real, esto sería una llamada a la API
         await apiService.delete(`/products/${id}`);
         
-        // Simulamos la eliminación
         setProducts(prevProducts => prevProducts.filter(product => product.id !== id));
         toast.success('Producto eliminado correctamente');
       } catch (error) {
@@ -89,13 +97,11 @@ const AdminProductsPage = () => {
   // Función para cambiar la disponibilidad de un producto
   const toggleAvailability = async (id: string, currentStatus: boolean) => {
     try {
-      // En un entorno real, esto sería una llamada a la API
-      await apiService.patch(`/products/${id}`, { available: !currentStatus });
+      await apiService.patch(`/products/${id}`, { stock: !currentStatus });
       
-      // Simulamos el cambio de estado
       setProducts(prevProducts => 
         prevProducts.map(product => 
-          product.id === id ? { ...product, available: !currentStatus } : product
+          product.id === id ? { ...product, available: !currentStatus, stock: !currentStatus } : product
         )
       );
       
@@ -109,25 +115,22 @@ const AdminProductsPage = () => {
   // Filtrar productos según los criterios seleccionados
   const filteredProducts = products
     .filter(product => {
-      // Filtro por disponibilidad
-      if (filter === 'available') return product.available;
-      if (filter === 'unavailable') return !product.available;
-      if (filter === 'out_of_stock') return product.stock === 0;
-      return true; // 'all'
+      if (filter === 'available') return product.available === true;
+      if (filter === 'unavailable') return product.available === false;
+      if (filter === 'out_of_stock') return product.stock === 0 || product.stock === false;
+      return true; 
     })
     .filter(product => {
-      // Filtro por categoría
       if (selectedCategory === 'all') return true;
       return product.category === selectedCategory;
     })
     .filter(product => {
-      // Filtro por término de búsqueda
       if (!searchTerm) return true;
       const searchLower = searchTerm.toLowerCase();
       return (
         product.name.toLowerCase().includes(searchLower) ||
         product.description.toLowerCase().includes(searchLower) ||
-        product.category.toLowerCase().includes(searchLower)
+        (product.category && product.category.toLowerCase().includes(searchLower))
       );
     });
 
@@ -286,16 +289,19 @@ const AdminProductsPage = () => {
                       {formatPrice(product.price)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className={`${product.stock === 0 ? 'text-red-600 font-medium' : ''}`}>
-                        {product.stock}
+                      <span className={`${product.stock === 0 || product.stock === false ? 'text-red-600 font-medium' : ''}`}>
+                        {typeof product.stock === 'boolean' ? (product.stock ? 'En stock' : 'Sin stock') : product.stock}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        product.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
+                      <button
+                        onClick={() => toggleAvailability(product.id, product.available === true)}
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          product.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}
+                      >
                         {product.available ? 'Disponible' : 'No disponible'}
-                      </span>
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-3">
@@ -309,7 +315,7 @@ const AdminProductsPage = () => {
                           </svg>
                         </button>
                         <button
-                          onClick={() => toggleAvailability(product.id, product.available)}
+                          onClick={() => toggleAvailability(product.id, product.available === true)}
                           className={product.available ? "text-yellow-600 hover:text-yellow-900" : "text-green-600 hover:text-green-900"}
                           title={product.available ? "Marcar como no disponible" : "Marcar como disponible"}
                         >
