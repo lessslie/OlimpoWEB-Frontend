@@ -56,115 +56,92 @@ const EditProductPage = ({ params }: PageProps) => {
   const [imagePreview, setImagePreview] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [authChecked, setAuthChecked] = useState(false);
 
   // Verificar si el usuario está autenticado y es administrador
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        // Solo verificar una vez
-        if (authChecked) return;
-        
-        if (!loading) {
-          if (!user) {
-            console.log("Usuario no autenticado, redirigiendo a login");
-            router.push("/login");
-            return;
-          } 
-          
-          if (!isAdmin) {
-            console.log("Usuario no es admin, redirigiendo a dashboard");
-            router.push("/dashboard");
-            return;
-          }
-          
-          setAuthChecked(true);
-        }
-      } catch (error) {
-        console.error("Error al verificar autenticación:", error);
+      console.log("Verificando autenticación...");
+      
+      if (loading) {
+        console.log("Cargando estado de autenticación...");
+        return; // Esperar a que termine de cargar
       }
+      
+      console.log("Estado de autenticación:", { user, isAdmin });
+      
+      if (!user) {
+        console.log("Usuario no autenticado, redirigiendo a login...");
+        toast.error("Debes iniciar sesión para acceder a esta página");
+        router.push("/login");
+        return;
+      }
+      
+      if (!isAdmin) {
+        console.log("Usuario no es administrador, redirigiendo a dashboard...");
+        toast.error("No tienes permisos para acceder a esta página");
+        router.push("/dashboard");
+        return;
+      }
+      
+      // Si llegamos aquí, el usuario está autenticado y es admin
+      console.log("Usuario autenticado y con permisos de administrador");
+      fetchProductData();
     };
-    
+
     checkAuth();
-  }, [user, isAdmin, loading, router, authChecked]);
+  }, [user, isAdmin, loading, router]);
 
-  // Cargar datos del producto cuando la autenticación esté verificada
-  useEffect(() => {
-    const loadProductData = async () => {
-      if (authChecked && id) {
-        console.log("Cargando datos del producto:", id);
-        await fetchProductData();
-      }
-    };
-    
-    loadProductData();
-  }, [authChecked, id]);
-
-  // Obtener datos del producto
+  // Cargar datos del producto
   const fetchProductData = async () => {
-    try {
-      setIsLoading(true);
-      console.log("Obteniendo datos del producto con ID:", id);
+    if (!id) {
+      console.error("ID de producto no válido");
+      toast.error("ID de producto no válido");
+      router.push("/admin/products");
+      return;
+    }
 
-      // Obtener el producto específico por su ID
+    console.log("Cargando datos del producto:", id);
+    setIsLoading(true);
+
+    try {
+      console.log("Obteniendo datos del producto con ID:", id);
       const response = await apiService.get(`/products/${id}`);
       console.log("Respuesta de la API:", response.data);
-      const productData = response.data;
 
-      // Verificar si productData es un objeto (producto único) o un array
-      if (Array.isArray(productData)) {
-        console.log("Respuesta es un array, buscando producto con ID:", id);
-        // Si es un array, buscar el producto por ID
-        const product = productData.find((product) => product.id === id);
-        
-        if (product) {
-          console.log("Producto encontrado en el array:", product);
-          setFormData({
-            name: product.name,
-            description: product.description,
-            price: product.price.toString(),
-            image_url: product.image_url || product.image || "",
-            category: product.category || product.category_id || "",
-            stock: typeof product.stock === 'boolean' ? (product.stock ? "1" : "0") : product.stock.toString(),
-            available: product.available || (typeof product.stock === 'boolean' ? product.stock : product.stock > 0),
-            featured: product.featured || product.is_featured || false,
-          });
+      let productData;
 
-          if (product.image_url || product.image) {
-            setImagePreview(product.image_url || product.image);
-          }
-        } else {
-          console.error("Producto no encontrado en el array");
-          toast.error("Producto no encontrado");
-          router.push("/admin/products");
+      // Manejar tanto respuestas de array como de objeto único
+      if (Array.isArray(response.data)) {
+        if (response.data.length === 0) {
+          throw new Error("Producto no encontrado");
         }
+        console.log("Respuesta es un array:", response.data);
+        productData = response.data[0];
       } else {
-        // Si es un objeto único (el producto directamente)
-        console.log("Respuesta es un objeto único:", productData);
-        const product = productData;
-        
-        setFormData({
-          name: product.name,
-          description: product.description,
-          price: product.price.toString(),
-          image_url: product.image_url || product.image || "",
-          category: product.category || product.category_id || "",
-          stock: typeof product.stock === 'boolean' ? (product.stock ? "1" : "0") : product.stock.toString(),
-          available: product.available || (typeof product.stock === 'boolean' ? product.stock : product.stock > 0),
-          featured: product.featured || product.is_featured || false,
-        });
+        console.log("Respuesta es un objeto único:", response.data);
+        productData = response.data;
+      }
 
-        if (product.image_url || product.image) {
-          setImagePreview(product.image_url || product.image);
-        }
+      // Actualizar el estado del formulario con los datos del producto
+      setFormData({
+        name: productData.name || "",
+        description: productData.description || "",
+        price: productData.price ? productData.price.toString() : "0",
+        image_url: productData.image || productData.image_url || "",
+        category: productData.category_id || "",
+        stock: productData.stock_quantity ? productData.stock_quantity.toString() : "0",
+        available: typeof productData.stock === "boolean" ? productData.stock : true,
+        featured: productData.is_featured || false,
+      });
+
+      // Establecer la vista previa de la imagen
+      if (productData.image || productData.image_url) {
+        setImagePreview(productData.image || productData.image_url);
       }
     } catch (error) {
       console.error("Error al cargar el producto:", error);
       toast.error("No se pudo cargar el producto");
-      // Redirigir a la lista de productos en caso de error
-      setTimeout(() => {
-        router.push("/admin/products");
-      }, 1500);
+      router.push("/admin/products");
     } finally {
       setIsLoading(false);
     }
@@ -234,10 +211,8 @@ const EditProductPage = ({ params }: PageProps) => {
       // Mostrar mensaje de éxito
       toast.success("Producto actualizado correctamente");
 
-      // Redirigir a la lista de productos
-      setTimeout(() => {
-        router.push("/admin/products");
-      }, 1500);
+      // Redirigir a la lista de productos usando la API correcta de Next.js
+      router.replace("/admin/products");
     } catch (error: any) { // Tipamos el error como 'any' para poder acceder a sus propiedades
       console.error("Error al actualizar el producto:", error);
       // Mostrar mensaje de error más detallado si está disponible

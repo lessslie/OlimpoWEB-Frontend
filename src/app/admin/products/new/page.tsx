@@ -33,13 +33,35 @@ const NewProductPage = () => {
 
   // Verificar si el usuario está autenticado y es administrador
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push('/login');
-      } else if (!isAdmin) {
-        router.push('/dashboard');
+    const checkAuth = async () => {
+      console.log("Verificando autenticación...");
+      
+      if (loading) {
+        console.log("Cargando estado de autenticación...");
+        return; // Esperar a que termine de cargar
       }
-    }
+      
+      console.log("Estado de autenticación:", { user, isAdmin });
+      
+      if (!user) {
+        console.log("Usuario no autenticado, redirigiendo a login...");
+        toast.error("Debes iniciar sesión para acceder a esta página");
+        router.push("/login");
+        return;
+      }
+      
+      if (!isAdmin) {
+        console.log("Usuario no es administrador, redirigiendo a dashboard...");
+        toast.error("No tienes permisos para acceder a esta página");
+        router.push("/dashboard");
+        return;
+      }
+      
+      // Si llegamos aquí, el usuario está autenticado y es admin
+      console.log("Usuario autenticado y con permisos de administrador");
+    };
+
+    checkAuth();
   }, [user, isAdmin, loading, router]);
 
   // Manejar cambios en los campos del formulario
@@ -97,10 +119,8 @@ const NewProductPage = () => {
       // Mostrar mensaje de éxito
       toast.success('Producto creado correctamente');
       
-      // Redirigir a la lista de productos
-      setTimeout(() => {
-        router.push('/admin/products');
-      }, 1500);
+      // Redirigir a la lista de productos usando router.replace
+      router.replace('/admin/products');
     } catch (error: any) {
       console.error('Error al crear el producto:', error);
       // Mostrar mensaje de error más detallado si está disponible
