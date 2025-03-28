@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import BackgroundLogo from "@/components/BackgroundLogo";
 import { apiService } from "@/services/api.service";
 import { toast } from "react-hot-toast";
+import Link from "next/link";
 
 // Categorías predefinidas
 const CATEGORIES = [
@@ -33,14 +34,13 @@ interface PageProps {
   params: {
     id: string;
   };
-  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 const EditProductPage = ({ params }: PageProps) => {
-  // NOTA: Estamos accediendo directamente a params.id, lo que genera una advertencia en Next.js.
-  // En versiones futuras, se requerirá usar React.use() para desenvolver params, pero actualmente
-  // no podemos usar React.use() en componentes cliente ('use client').
-  const id = params.id;
+  // Obtenemos el ID del producto de los parámetros de la ruta
+  const productId = params.id;
+  
+  // Hooks y estado
   const { user, isAdmin, loading } = useAuth();
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -51,139 +51,117 @@ const EditProductPage = ({ params }: PageProps) => {
     category: "",
     stock: "0",
     available: true,
-    featured: false,
+    featured: false
   });
   const [imagePreview, setImagePreview] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [productLoaded, setProductLoaded] = useState(false);
 
-  // Verificar si el usuario está autenticado y es administrador
+  // Verificar autenticación
   useEffect(() => {
-    const checkAuth = async () => {
-      console.log("Verificando autenticación...");
-      
-      if (loading) {
-        console.log("Cargando estado de autenticación...");
-        return; // Esperar a que termine de cargar
-      }
-      
-      console.log("Estado de autenticación:", { user, isAdmin });
-      
+    const verifyAuth = async () => {
+      // Esperar a que se cargue la información de autenticación
+      if (loading) return;
+
+      // Si no hay usuario o no es admin, redirigir
       if (!user) {
-        console.log("Usuario no autenticado, redirigiendo a login...");
         toast.error("Debes iniciar sesión para acceder a esta página");
-        router.push("/login");
+        router.replace("/login");
         return;
       }
-      
+
       if (!isAdmin) {
-        console.log("Usuario no es administrador, redirigiendo a dashboard...");
         toast.error("No tienes permisos para acceder a esta página");
-        router.push("/dashboard");
+        router.replace("/dashboard");
         return;
       }
-      
-      // Si llegamos aquí, el usuario está autenticado y es admin
-      console.log("Usuario autenticado y con permisos de administrador");
-      fetchProductData();
+
+      setAuthChecked(true);
     };
 
-    checkAuth();
+    verifyAuth();
   }, [user, isAdmin, loading, router]);
 
-  // Cargar datos del producto
-  const fetchProductData = async () => {
-    if (!id) {
-      console.error("ID de producto no válido");
-      toast.error("ID de producto no válido");
-      router.push("/admin/products");
-      return;
-    }
-
-    console.log("Cargando datos del producto:", id);
-    setIsLoading(true);
-
-    try {
-      console.log("Obteniendo datos del producto con ID:", id);
-      const response = await apiService.get(`/products/${id}`);
-      console.log("Respuesta de la API:", response.data);
-
-      let productData;
-
-      // Manejar tanto respuestas de array como de objeto único
-      if (Array.isArray(response.data)) {
-        if (response.data.length === 0) {
-          throw new Error("Producto no encontrado");
+  // Cargar datos del producto cuando la autenticación esté verificada
+  useEffect(() => {
+    if (!authChecked || !productId) return;
+    
+    const loadProduct = async () => {
+      try {
+        setIsLoading(true);
+        console.log("Cargando producto con ID:", productId);
+        
+        const response = await apiService.get(`/products/${productId}`);
+        const data = response.data;
+        
+        // Manejar tanto si la respuesta es un objeto como un array
+        const productData = Array.isArray(data) ? data[0] : data;
+        
+        if (!productData) {
+          toast.error("Producto no encontrado");
+          router.replace("/admin/products");
+          return;
         }
-        console.log("Respuesta es un array:", response.data);
-        productData = response.data[0];
-      } else {
-        console.log("Respuesta es un objeto único:", response.data);
-        productData = response.data;
+        
+        console.log("Datos del producto cargados:", productData);
+        
+        // Actualizar el estado del formulario
+        setFormData({
+          name: productData.name || "",
+          description: productData.description || "",
+          price: productData.price ? productData.price.toString() : "0",
+          image_url: productData.image || "",
+          category: productData.category_id || "",
+          stock: "0", // Valor por defecto
+          available: typeof productData.stock === "boolean" ? productData.stock : true,
+          featured: productData.is_featured || false
+        });
+        
+        // Establecer vista previa de imagen
+        if (productData.image) {
+          setImagePreview(productData.image);
+        }
+        
+        setProductLoaded(true);
+      } catch (error) {
+        console.error("Error al cargar el producto:", error);
+        toast.error("No se pudo cargar el producto");
+        router.replace("/admin/products");
+      } finally {
+        setIsLoading(false);
       }
-
-      // Actualizar el estado del formulario con los datos del producto
-      setFormData({
-        name: productData.name || "",
-        description: productData.description || "",
-        price: productData.price ? productData.price.toString() : "0",
-        image_url: productData.image || productData.image_url || "",
-        category: productData.category_id || "",
-        stock: productData.stock_quantity ? productData.stock_quantity.toString() : "0",
-        available: typeof productData.stock === "boolean" ? productData.stock : true,
-        featured: productData.is_featured || false,
-      });
-
-      // Establecer la vista previa de la imagen
-      if (productData.image || productData.image_url) {
-        setImagePreview(productData.image || productData.image_url);
-      }
-    } catch (error) {
-      console.error("Error al cargar el producto:", error);
-      toast.error("No se pudo cargar el producto");
-      router.push("/admin/products");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+    
+    loadProduct();
+  }, [authChecked, productId, router]);
 
   // Manejar cambios en los campos del formulario
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
-    const { name, value, type } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    if (type === "checkbox") {
-      const checkbox = e.target as HTMLInputElement;
-      setFormData({
-        ...formData,
-        [name]: checkbox.checked,
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    }
+  // Manejar cambios en los campos de checkbox
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: checked }));
+  };
 
-    // Actualizar vista previa de la imagen
-    if (name === "image_url" && value) {
-      setImagePreview(value);
-    }
+  // Manejar cambios en la imagen
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setFormData((prev) => ({ ...prev, image_url: value }));
+    setImagePreview(value);
   };
 
   // Enviar el formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !formData.name ||
-      !formData.description ||
-      !formData.price ||
-      !formData.category
-    ) {
+    // Validación básica
+    if (!formData.name || !formData.description || !formData.price || !formData.category) {
       toast.error("Por favor completa los campos obligatorios");
       return;
     }
@@ -191,7 +169,7 @@ const EditProductPage = ({ params }: PageProps) => {
     setIsSaving(true);
 
     try {
-      // Preparar datos para enviar - adaptados al formato que espera el backend según UpdateProductDto
+      // Preparar datos según el formato que espera el backend
       const productData = {
         name: formData.name,
         description: formData.description,
@@ -201,26 +179,26 @@ const EditProductPage = ({ params }: PageProps) => {
         stock: formData.available
       };
 
-      console.log("Enviando datos de producto:", productData);
-      console.log("URL de actualización:", `/products/${id}`);
-
-      // Realizar la petición PATCH al backend
-      const response = await apiService.patch(`/products/${id}`, productData);
-      console.log("Respuesta de actualización:", response.data);
-
-      // Mostrar mensaje de éxito
+      console.log("Enviando datos:", productData);
+      
+      // Actualizar el producto
+      await apiService.patch(`/products/${productId}`, productData);
+      
       toast.success("Producto actualizado correctamente");
-
-      // Redirigir a la lista de productos usando la API correcta de Next.js
-      router.replace("/admin/products");
-    } catch (error: any) { // Tipamos el error como 'any' para poder acceder a sus propiedades
+      
+      // Usar setTimeout para dar tiempo a que se muestre el toast
+      setTimeout(() => {
+        router.replace("/admin/products");
+      }, 1000);
+    } catch (error: any) {
       console.error("Error al actualizar el producto:", error);
-      // Mostrar mensaje de error más detallado si está disponible
-      if (error.response && error.response.data && error.response.data.message) {
-        const errorMessage = Array.isArray(error.response.data.message) 
-          ? error.response.data.message.join(', ') 
+      
+      // Mostrar mensaje de error detallado si está disponible
+      if (error.response?.data?.message) {
+        const errorMsg = Array.isArray(error.response.data.message)
+          ? error.response.data.message.join(", ")
           : error.response.data.message;
-        toast.error(`Error: ${errorMessage}`);
+        toast.error(`Error: ${errorMsg}`);
       } else {
         toast.error("No se pudo actualizar el producto");
       }
@@ -229,86 +207,126 @@ const EditProductPage = ({ params }: PageProps) => {
     }
   };
 
-  if (loading || isLoading) {
+  // Mostrar pantalla de carga mientras se verifica la autenticación
+  if (loading || (!authChecked && !productLoaded)) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <BackgroundLogo />
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-lg text-gray-600">Cargando...</p>
+        </div>
       </div>
     );
   }
 
-  if (!user || !isAdmin) {
-    return null;
+  // Mostrar pantalla de carga mientras se cargan los datos del producto
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <BackgroundLogo />
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-lg text-gray-600">Cargando datos del producto...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <BackgroundLogo opacity={0.05} />
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Editar Producto</h1>
-        <button
-          onClick={() => router.push("/admin/products")}
-          className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
-        >
-          Volver a Productos
-        </button>
-      </div>
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <BackgroundLogo />
+      
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Editar Producto</h1>
+          <Link
+            href="/admin/products"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Volver a Productos
+          </Link>
+        </div>
 
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <div className="mb-4">
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Nombre *
+            {/* Columna izquierda */}
+            <div className="space-y-6">
+              {/* Nombre */}
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   id="name"
                   name="name"
+                  required
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  required
+                  className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                 />
               </div>
 
-              <div className="mb-4">
-                <label
-                  htmlFor="price"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Precio *
+              {/* Descripción */}
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                  Descripción <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="number"
-                  id="price"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  min="0"
+                <textarea
+                  id="description"
+                  name="description"
+                  rows={4}
                   required
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                 />
               </div>
 
-              <div className="mb-4">
-                <label
-                  htmlFor="category"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Categoría *
+              {/* Precio */}
+              <div>
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+                  Precio <span className="text-red-500">*</span>
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">$</span>
+                  </div>
+                  <input
+                    type="number"
+                    id="price"
+                    name="price"
+                    required
+                    min="0"
+                    value={formData.price}
+                    onChange={handleChange}
+                    className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+                    placeholder="0"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">ARS</span>
+                  </div>
+                </div>
+                {formData.price && (
+                  <p className="mt-1 text-sm text-gray-500">
+                    Precio formateado: {formatPrice(formData.price)}
+                  </p>
+                )}
+              </div>
+
+              {/* Categoría */}
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                  Categoría <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="category"
                   name="category"
+                  required
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  required
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                 >
                   <option value="">Seleccionar categoría</option>
                   {CATEGORIES.map((category) => (
@@ -318,137 +336,104 @@ const EditProductPage = ({ params }: PageProps) => {
                   ))}
                 </select>
               </div>
+            </div>
 
-              <div className="mb-4">
-                <label
-                  htmlFor="image_url"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
+            {/* Columna derecha */}
+            <div className="space-y-6">
+              {/* URL de la imagen */}
+              <div>
+                <label htmlFor="image_url" className="block text-sm font-medium text-gray-700 mb-1">
                   URL de la imagen
                 </label>
                 <input
-                  type="text"
+                  type="url"
                   id="image_url"
                   name="image_url"
                   value={formData.image_url}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  onChange={handleImageChange}
+                  className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                  placeholder="https://ejemplo.com/imagen.jpg"
                 />
               </div>
 
-              <div className="flex space-x-4 mb-4">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="available"
-                    name="available"
-                    checked={formData.available}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                  />
-                  <label
-                    htmlFor="available"
-                    className="ml-2 block text-sm text-gray-900"
-                  >
-                    Disponible
-                  </label>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="featured"
-                    name="featured"
-                    checked={formData.featured}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                  />
-                  <label
-                    htmlFor="featured"
-                    className="ml-2 block text-sm text-gray-900"
-                  >
-                    Destacado
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div className="mb-4">
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Descripción *
-                </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={5}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                ></textarea>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Vista previa de la imagen
-                </label>
-                <div className="border border-gray-300 rounded-md p-2 h-64 flex items-center justify-center">
+              {/* Vista previa de la imagen */}
+              <div>
+                <p className="block text-sm font-medium text-gray-700 mb-1">Vista previa</p>
+                <div className="mt-1 border-2 border-gray-300 border-dashed rounded-md p-2 h-48 flex justify-center items-center">
                   {imagePreview ? (
                     <img
                       src={imagePreview}
                       alt="Vista previa"
-                      className="max-h-60 max-w-full object-contain"
+                      className="max-h-full max-w-full object-contain"
+                      onError={() => {
+                        toast.error("Error al cargar la imagen");
+                        setImagePreview("");
+                      }}
                     />
                   ) : (
-                    <span className="text-gray-400">
-                      No hay imagen disponible
-                    </span>
+                    <div className="text-center">
+                      <p className="text-gray-500">No hay imagen</p>
+                    </div>
                   )}
                 </div>
+              </div>
+
+              {/* Disponibilidad */}
+              <div className="flex items-center">
+                <input
+                  id="available"
+                  name="available"
+                  type="checkbox"
+                  checked={formData.available}
+                  onChange={handleCheckboxChange}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="available" className="ml-2 block text-sm text-gray-900">
+                  Producto disponible
+                </label>
+              </div>
+
+              {/* Destacado */}
+              <div className="flex items-center">
+                <input
+                  id="featured"
+                  name="featured"
+                  type="checkbox"
+                  checked={formData.featured}
+                  onChange={handleCheckboxChange}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="featured" className="ml-2 block text-sm text-gray-900">
+                  Producto destacado
+                </label>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end">
-            <button
-              type="button"
-              onClick={() => router.push("/admin/products")}
-              className="mr-4 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          {/* Botones de acción */}
+          <div className="mt-8 flex justify-end">
+            <Link
+              href="/admin/products"
+              className="mr-4 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
               Cancelar
-            </button>
+            </Link>
             <button
               type="submit"
               disabled={isSaving}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center"
+              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {isSaving && (
-                <svg
-                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
+              {isSaving ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Guardando...
+                </>
+              ) : (
+                "Guardar Cambios"
               )}
-              {isSaving ? "Guardando..." : "Guardar Cambios"}
             </button>
           </div>
         </form>
